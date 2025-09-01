@@ -5,8 +5,8 @@
     padding: 0;
 }
 :root {
-    --color-primary: #6e41e2;
-    --color-magenta: #c2185b; /* Główny kolor belki */
+    --color-primary: #c2185b; /* ZMIANA: Główny kolor zmieniony na magentowy */
+    --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
     --color-gray-light: #f5f5f5;
@@ -43,7 +43,7 @@ h1, h2, h3 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-    width: 100%; /* Upewnia się, że kontener zajmuje całą dostępną szerokość */
+    width: 100%; 
 }
 
 /* === UTILITY CLASSES === */
@@ -62,7 +62,7 @@ h1, h2, h3 {
     color: var(--color-light);
 }
 .btn-primary:hover {
-    background-color: #5835b0;
+    background-color: #a31545; /* Ciemniejszy odcień magenty */
 }
 .btn-secondary {
     background-color: var(--color-light);
@@ -91,9 +91,9 @@ h1, h2, h3 {
 }
 
 
-/* === HEADER & NAVIGATION - Zmiany === */
+/* === HEADER & NAVIGATION === */
 .main-header {
-    background-color: var(--color-light); /* Zmiana: Domyślne tło białe */
+    background-color: var(--color-light);
     padding: 1.5rem 0;
     height: 80px;
     display: flex;
@@ -102,7 +102,7 @@ h1, h2, h3 {
     top: 0;
     z-index: 1000;
     transition: height 0.3s ease-in-out, background-color 0.3s ease-in-out;
-    border-bottom: 1px solid var(--color-gray-dark); /* Dodana linia oddzielająca */
+    border-bottom: 1px solid var(--color-gray-dark);
 }
 .main-header .container {
     display: flex;
@@ -120,7 +120,7 @@ h1, h2, h3 {
 .main-nav a {
     font-weight: 700;
     font-size: 2rem;
-    color: var(--color-magenta); /* Zmiana: Domyślny kolor linków */
+    color: var(--color-magenta);
     transition: font-size 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
@@ -319,9 +319,12 @@ h1, h2, h3 {
     .hero-text h1 {
         font-size: 5.2rem;
     }
-    .hero-text p, .hero-text h1 {
+    
+    /* POPRAWKA: Usunięto regułę, która psuła wyśrodkowanie paragrafu */
+    /* .hero-text p, .hero-text h1 {
         margin-left: 0;
-    }
+    } */
+
     .hero-buttons {
         justify-content: center;
     }
@@ -348,14 +351,14 @@ h1, h2, h3 {
 /* === STICKY HEADER STYLES === */
 .main-header.sticky {
     height: 60px;
-    background-color: var(--color-magenta); /* Tło magentowe w stanie sticky */
+    background-color: var(--color-magenta);
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    border-bottom: 1px solid transparent; /* Ukryj dolną linię w stanie sticky */
+    border-bottom: 1px solid transparent;
 }
 .main-header.sticky .logo-img {
     height: 4rem;
 }
 .main-header.sticky .main-nav a {
     font-size: 1.8rem;
-    color: var(--color-light); /* Linki stają się białe w stanie sticky */
+    color: var(--color-light);
 }
