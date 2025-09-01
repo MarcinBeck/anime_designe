@@ -1,0 +1,121 @@
+/* Resetowanie domyślnych stylów przeglądarki */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Style globalne dla całej strony */
+body {
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.6;
+    background: #333;
+    color: #fff;
+}
+
+/* Nawigacja */
+.nav {
+    background: #444;
+    color: #fff;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem; /* Użycie rem dla lepszej skalowalności */
+}
+
+.nav ul {
+    display: flex;
+    list-style: none;
+}
+
+.nav ul li a {
+    text-decoration: none;
+    color: #fff;
+    padding: 1.5rem; /* Użycie rem */
+    font-size: 1.1rem; /* ok. 18px */
+}
+
+.nav a:hover {
+    background: #555;
+    color: #f4f4f4;
+}
+
+.logo img {
+    width: 60px;
+}
+
+/* Główny kontener */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 1.25rem; /* ok. 20px */
+}
+
+/* Nagłówek */
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 70vh;
+}
+
+.header img {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    margin-bottom: 1.25rem; /* ok. 20px */
+}
+
+.header h1 {
+    font-size: 2.5rem; /* ok. 40px */
+}
+
+.header p {
+    margin: 0.6rem 0; /* ok. 10px */
+    font-size: 1.25rem; /* ok. 20px */
+}
+
+.btn {
+    text-decoration: none;
+    background: #555;
+    color: #fff;
+    padding: 0.8rem 1.8rem; /* ok. 13px 29px */
+    border-radius: 5px;
+}
+
+.btn:hover {
+    background: #666;
+}
+
+/* Sekcja z boxami */
+.boxes {
+    display: flex;
+    margin-top: 2rem; /* ok. 32px */
+}
+
+.box {
+    text-align: center;
+    padding: 1.5rem; /* ok. 24px */
+}
+
+.box img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+}
+
+.box h3 {
+    margin: 1.25rem 0; /* ok. 20px */
+}
+
+/* Stopka */
+.footer {
+    margin-top: 3rem; /* ok. 48px */
+    background: #444;
+    color: #fff;
+    text-align: center;
+    padding: 1.25rem 0; /* ok. 20px */
+}
