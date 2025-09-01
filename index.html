@@ -12,7 +12,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" rel="preload" as="style">
 </head>
 <body>
 
@@ -32,7 +32,10 @@
 
     <main>
         <section class="hero">
-            <div class="container hero-container">
+            <div class="hero-bg">
+                <img src="/anime_designe/img/device-frame.png" alt="Wizualizacja projektu na urządzeniu" class="hero-bg-image">
+            </div>
+            <div class="container hero-content">
                 <div class="hero-text">
                     <h1>A bold headline<br>that delivers</h1>
                     <p>Go ahead and say just a little more about what you do.</p>
@@ -40,9 +43,6 @@
                         <button class="btn btn-primary">Button label</button>
                         <button class="btn btn-secondary">Button label</button>
                     </div>
-                </div>
-                <div class="hero-image">
-                    <img src="/anime_designe/img/device-frame.png" alt="Wizualizacja projektu na urządzeniu" class="hero-device-img">
                 </div>
             </div>
         </section>
