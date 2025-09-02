@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const galleryGrid = document.querySelector('.gallery-grid');
     
-    // Zapisujemy oryginalne karty galerii, aby móc do nich wrócić
     const originalCards = Array.from(galleryGrid.querySelectorAll('.card'));
 
     tabButtons.forEach(button => {
@@ -41,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === OBSŁUGA PŁYWAJĄCEGO HEADERA ===
     const header = document.querySelector('.main-header');
-    // Dodajemy klasę 'sticky' gdy strona jest przewinięta o więcej niż 10 pikseli
     window.addEventListener('scroll', () => {
         if (window.scrollY > 10) {
             header.classList.add('sticky');
@@ -49,5 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
             header.classList.remove('sticky');
         }
     });
+
+    // === NOWA SEKCJA: OBSŁUGA PRZEWIJANIA STRZAŁKĄ ===
+    const scrollDownArrow = document.querySelector('.scroll-down-arrow');
+    if (scrollDownArrow) {
+        scrollDownArrow.addEventListener('click', (e) => {
+            e.preventDefault(); // Zapobiega domyślnej akcji kotwicy
+            const targetId = scrollDownArrow.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+
+            if (targetElement) {
+                // Oblicz pozycję do przewinięcia, uwzględniając wysokość belki nawigacyjnej
+                const headerHeight = header.offsetHeight;
+                const offsetTop = targetElement.offsetTop - headerHeight;
+
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth' // Płynne przewijanie
+                });
+            }
+        });
+    }
 
 });
