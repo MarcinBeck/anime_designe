@@ -48,25 +48,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === NOWA SEKCJA: OBSŁUGA PRZEWIJANIA STRZAŁKĄ ===
+    // === OBSŁUGA PRZEWIJANIA STRZAŁKĄ ===
     const scrollDownArrow = document.querySelector('.scroll-down-arrow');
     if (scrollDownArrow) {
         scrollDownArrow.addEventListener('click', (e) => {
-            e.preventDefault(); // Zapobiega domyślnej akcji kotwicy
+            e.preventDefault();
             const targetId = scrollDownArrow.getAttribute('href');
             const targetElement = document.querySelector(targetId);
 
             if (targetElement) {
-                // Oblicz pozycję do przewinięcia, uwzględniając wysokość belki nawigacyjnej
                 const headerHeight = header.offsetHeight;
                 const offsetTop = targetElement.offsetTop - headerHeight;
 
                 window.scrollTo({
                     top: offsetTop,
-                    behavior: 'smooth' // Płynne przewijanie
+                    behavior: 'smooth'
                 });
             }
         });
     }
+    
+    // === NOWA SEKCJA: ANIMACJE PRZY PRZEWIJANIU ===
+    const elementsToFadeIn = document.querySelectorAll('.fade-in');
+
+    const observerOptions = {
+        root: null, // Obserwuj względem całego viewportu
+        rootMargin: '0px',
+        threshold: 0.1 // Uruchom, gdy 10% elementu jest widoczne
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            // Jeśli element wszedł w obszar widoczny
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                // Przestań obserwować ten element, aby animacja wykonała się tylko raz
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Powiedz obserwatorowi, aby zaczął obserwować każdy element
+    elementsToFadeIn.forEach(element => {
+        observer.observe(element);
+    });
 
 });
