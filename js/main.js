@@ -74,20 +74,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const observerOptions = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.1
+        threshold: 0.5 // Zwiększono próg: element musi być w 50% widoczny
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
+                // Element wchodzi w widoczny obszar
                 entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target);
+                entry.target.classList.remove('animate-hidden'); // Upewnij się, że ukrycie jest usunięte
+            } else {
+                // Element opuszcza widoczny obszar
+                entry.target.classList.remove('is-visible');
+                entry.target.classList.add('animate-hidden'); // Dodaj klasę ukrywającą
             }
         });
     }, observerOptions);
 
     elementsToAnimate.forEach(element => {
         observer.observe(element);
+    });
+
+    // Sprawdź stan elementów natychmiast po załadowaniu strony
+    // aby te, które są od razu widoczne, pojawiły się poprawnie
+    const initialCheckObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                entry.target.classList.remove('animate-hidden');
+            }
+            // Nie przestajemy obserwować, bo chcemy, żeby znikały po wyjechaniu
+        });
+    }, observerOptions);
+
+    elementsToAnimate.forEach(element => {
+        initialCheckObserver.observe(element);
     });
 
 });
