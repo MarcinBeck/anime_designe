@@ -22,7 +22,12 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: var(--color-text);
-    background-color: var(--color-light);
+    background-color: var(--color-dark); /* Kolor awaryjny */
+    /* GŁÓWNA ZMIANA: Tło strony */
+    background-image: url('/anime_designe/img/device-frame.png');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed; /* Klucz do efektu "nieruchomego" tła */
 }
 img {
     max-width: 100%;
@@ -134,25 +139,12 @@ h1, h2, h3 {
     align-items: center;
     text-align: center;
     color: var(--color-light);
+    /* ZMIANA: Półprzezroczysta warstwa przyciemniająca */
+    background-color: rgba(0, 0, 0, 0.4);
 }
 .hero.full-screen {
     height: calc(100vh - 80px);
     min-height: 500px;
-}
-.hero-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background-color: #333;
-}
-.hero-bg-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.7);
 }
 .hero-content {
     position: relative;
@@ -223,6 +215,7 @@ h1, h2, h3 {
 /* === GALLERY SECTION === */
 .gallery {
     padding: 6rem 0;
+    background-color: var(--color-light); /* DODANO: Białe tło, aby zakryć obrazek strony */
 }
 .gallery-intro, .accordion-intro, .newsletter-intro {
     text-align: center;
@@ -264,36 +257,26 @@ h1, h2, h3 {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     flex: 1 1 350px;
     max-width: 400px;
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Zwiększony czas trwania animacji */
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
-/* Początkowe ukrycie i przesunięcie */
 .animate-on-scroll {
     opacity: 0;
 }
 .slide-in-left {
-    transform: translateX(-100px); /* Zwiększona odległość */
+    transform: translateX(-100px);
 }
 .slide-in-right {
-    transform: translateX(100px); /* Zwiększona odległość */
+    transform: translateX(100px);
 }
 .slide-in-bottom {
-    transform: translateY(80px); /* Zwiększona odległość */
+    transform: translateY(80px);
 }
-
-/* Stan widoczny */
 .animate-on-scroll.is-visible {
     opacity: 1;
     transform: translate(0, 0);
 }
-
-/* Nowa klasa dla stanu ukrytego (wyjeżdżającego) */
 .animate-on-scroll.animate-hidden {
     opacity: 0;
-    /* Zachowujemy początkowe przesunięcie dla każdej klasy */
-    /* Niestety, w CSS nie ma prostego sposobu na resetowanie transform,
-       więc musimy powtórzyć początkowe wartości dla każdej klasy.
-       Alternatywnie, JS mógłby dynamicznie ustawiać te wartości.
-       Na razie powtarzam. */
 }
 .animate-on-scroll.animate-hidden.slide-in-left {
     transform: translateX(-100px);
@@ -304,8 +287,6 @@ h1, h2, h3 {
 .animate-on-scroll.animate-hidden.slide-in-bottom {
     transform: translateY(80px);
 }
-
-
 .card img {
     width: 100%;
     height: 220px;
@@ -319,25 +300,12 @@ h1, h2, h3 {
     margin-bottom: 1rem;
 }
 
-/* === ACCORDION SECTION (z efektem Parallax) === */
+/* === ACCORDION SECTION === */
 .accordion-section {
     padding: 6rem 0;
     position: relative;
-    background-color: var(--color-dark);
-}
-.accordion-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    background-image: url('/anime_designe/img/device-frame.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    filter: brightness(0.4); /* Przyciemnienie tła */
+    /* ZMIANA: Ciemniejsza, półprzezroczysta warstwa */
+    background-color: rgba(26, 26, 26, 0.9); 
 }
 .accordion-section .container {
     position: relative;
@@ -384,6 +352,7 @@ h1, h2, h3 {
 /* === NEWSLETTER SECTION === */
 .newsletter-section {
     padding: 6rem 0;
+    background-color: var(--color-light); /* DODANO: Białe tło, aby zakryć obrazek strony */
 }
 .newsletter-form {
     display: flex;
