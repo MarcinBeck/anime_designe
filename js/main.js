@@ -68,28 +68,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // === NOWA SEKCJA: ANIMACJE PRZY PRZEWIJANIU ===
-    const elementsToFadeIn = document.querySelectorAll('.fade-in');
+    // === ANIMACJE PRZY PRZEWIJANIU ===
+    const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
 
     const observerOptions = {
-        root: null, // Obserwuj względem całego viewportu
+        root: null,
         rootMargin: '0px',
-        threshold: 0.1 // Uruchom, gdy 10% elementu jest widoczne
+        threshold: 0.1
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
-            // Jeśli element wszedł w obszar widoczny
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                // Przestań obserwować ten element, aby animacja wykonała się tylko raz
                 observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    // Powiedz obserwatorowi, aby zaczął obserwować każdy element
-    elementsToFadeIn.forEach(element => {
+    elementsToAnimate.forEach(element => {
         observer.observe(element);
     });
 
