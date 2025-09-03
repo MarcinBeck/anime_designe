@@ -253,38 +253,59 @@ h1, h2, h3 {
     font-weight: 700;
 }
 .gallery-grid {
-    display: flex; /* Powrót do Flexbox */
-    flex-wrap: wrap; /* Zawijanie elementów */
-    justify-content: center; /* Wyśrodkowanie */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 3rem;
 }
 .card {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    flex: 1 1 350px; /* Elastyczność kart */
+    flex: 1 1 350px;
     max-width: 400px;
-    /* Płynne przejście dla animacji */
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Zwiększony czas trwania animacji */
 }
-/* Nowe style dla animacji wjeżdżania */
+/* Początkowe ukrycie i przesunięcie */
 .animate-on-scroll {
     opacity: 0;
 }
 .slide-in-left {
-    transform: translateX(-50px);
+    transform: translateX(-100px); /* Zwiększona odległość */
 }
 .slide-in-right {
-    transform: translateX(50px);
+    transform: translateX(100px); /* Zwiększona odległość */
 }
 .slide-in-bottom {
-    transform: translateY(50px);
+    transform: translateY(80px); /* Zwiększona odległość */
 }
+
+/* Stan widoczny */
 .animate-on-scroll.is-visible {
     opacity: 1;
     transform: translate(0, 0);
 }
-/* ---- */
+
+/* Nowa klasa dla stanu ukrytego (wyjeżdżającego) */
+.animate-on-scroll.animate-hidden {
+    opacity: 0;
+    /* Zachowujemy początkowe przesunięcie dla każdej klasy */
+    /* Niestety, w CSS nie ma prostego sposobu na resetowanie transform,
+       więc musimy powtórzyć początkowe wartości dla każdej klasy.
+       Alternatywnie, JS mógłby dynamicznie ustawiać te wartości.
+       Na razie powtarzam. */
+}
+.animate-on-scroll.animate-hidden.slide-in-left {
+    transform: translateX(-100px);
+}
+.animate-on-scroll.animate-hidden.slide-in-right {
+    transform: translateX(100px);
+}
+.animate-on-scroll.animate-hidden.slide-in-bottom {
+    transform: translateY(80px);
+}
+
+
 .card img {
     width: 100%;
     height: 220px;
@@ -312,11 +333,11 @@ h1, h2, h3 {
     width: 100%;
     height: 100%;
     z-index: 0;
-    background-image: url('/anime_designe/img/device-frame.png'); /* Zmiana tła */
+    background-image: url('/anime_designe/img/device-frame.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    filter: brightness(0.4);
+    filter: brightness(0.4); /* Przyciemnienie tła */
 }
 .accordion-section .container {
     position: relative;
