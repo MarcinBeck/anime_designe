@@ -68,25 +68,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // === ANIMACJE PRZY PRZEWIJANIU ===
+    // === ANIMACJE PRZY PRZEWIJANIU (Sekcje) ===
     const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
 
     const observerOptions = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.5 // Zwiększono próg: element musi być w 50% widoczny
+        threshold: 0.5 
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // Element wchodzi w widoczny obszar
                 entry.target.classList.add('is-visible');
-                entry.target.classList.remove('animate-hidden'); // Upewnij się, że ukrycie jest usunięte
+                entry.target.classList.remove('animate-hidden');
             } else {
-                // Element opuszcza widoczny obszar
                 entry.target.classList.remove('is-visible');
-                entry.target.classList.add('animate-hidden'); // Dodaj klasę ukrywającą
+                entry.target.classList.add('animate-hidden');
             }
         });
     }, observerOptions);
@@ -95,20 +93,58 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(element);
     });
 
-    // Sprawdź stan elementów natychmiast po załadowaniu strony
-    // aby te, które są od razu widoczne, pojawiły się poprawnie
     const initialCheckObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
                 entry.target.classList.remove('animate-hidden');
             }
-            // Nie przestajemy obserwować, bo chcemy, żeby znikały po wyjechaniu
         });
     }, observerOptions);
 
     elementsToAnimate.forEach(element => {
         initialCheckObserver.observe(element);
     });
+
+    // === NOWA SEKCJA: EFEKT PARALAKSY W HERO ===
+    const heroSection = document.querySelector('.hero');
+    const parallaxTextLeft = document.querySelector('.parallax-text-left');
+    const parallaxTextRight = document.querySelector('.parallax-text-right');
+    const parallaxBtnLeft = document.querySelector('.parallax-btn-left');
+    const parallaxBtnRight = document.querySelector('.parallax-btn-right');
+
+    if (heroSection && parallaxTextLeft && parallaxTextRight && parallaxBtnLeft && parallaxBtnRight) {
+        window.addEventListener('scroll', () => {
+            const scrollPos = window.scrollY;
+
+            // Efekt odjeżdżania dla tekstu
+            parallaxTextLeft.style.transform = `translateX(-${scrollPos * 0.5}px)`; // Szybciej w lewo
+            parallaxTextRight.style.transform = `translateX(${scrollPos * 0.5}px)`; // Szybciej w prawo
+
+            // Efekt odjeżdżania i zanikania dla przycisków
+            const btnScrollFactor = scrollPos * 0.7; // Przyciski odjeżdżają szybciej
+            parallaxBtnLeft.style.transform = `translateX(-${btnScrollFactor}px)`;
+            parallaxBtnRight.style.transform = `translateX(${btnScrollFactor}px)`;
+
+            // Dodatkowo, zanikanie i zmniejszanie przycisków
+            const opacity = Math.max(0, 1 - scrollPos / heroSection.offsetHeight * 2); // Zanikanie 2x szybciej
+            const scale = Math.max(0, 1 - scrollPos / heroSection.offsetHeight * 0.5); // Zmniejszanie wolniej
+            
+            parallaxBtnLeft.style.opacity = opacity;
+            parallaxBtnRight.style.opacity = opacity;
+            
+            parallaxBtnLeft.style.transform += ` scale(${scale})`; // Dodaj scale do transform
+            parallaxBtnRight.style.transform += ` scale(${scale})`; // Dodaj scale do transform
+
+            // Ukrywanie strzałki scroll down
+            const scrollArrow = document.querySelector('.scroll-down-arrow');
+            if (scrollArrow) {
+                scrollArrow.style.opacity = opacity; // Strzałka zanika tak samo jak przyciski
+                // Dodatkowe przesunięcie strzałki w dół przy przewijaniu
+                scrollArrow.style.transform = `translateX(-50%) translateY(${scrollPos * 0.3}px)`;
+            }
+
+        });
+    }
 
 });
