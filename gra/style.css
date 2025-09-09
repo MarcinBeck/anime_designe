@@ -132,16 +132,16 @@ p {
     width: 100%;
     height: 100%;
     z-index: 1;
-    /* POPRAWKA: Usunięto "opacity: 0" i "transition", aby kontener był zawsze widoczny (ale pod spodem) */
 }
 #game-wrapper.game-active .camera-container {
-    /* Już nie potrzebujemy tej reguły, bo kontener jest zawsze widoczny */
+    
 }
 #camera-feed {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1);
+    /* POPRAWKA: Usunięto potencjalnie problematyczną właściwość transform */
+    /* transform: scaleX(-1); */
 }
 
 /* Dolny panel z kontrolkami */
