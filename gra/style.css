@@ -4,8 +4,6 @@
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
-    --color-gray-light: #f5f5f5;
-    --color-gray-dark: #e0e0e0;
     --color-text: #333;
 }
 
@@ -26,22 +24,14 @@ body {
     background-color: var(--color-dark);
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden; /* Zapobiega przewijaniu na stronie gry */
 }
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
     width: 100%; 
-}
-h1 {
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-    color: var(--color-dark);
-}
-p {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
 }
 
 /* === Wspólny nagłówek i stopka === */
@@ -51,9 +41,7 @@ p {
     height: 80px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--color-gray-dark);
-    position: relative;
-    z-index: 20;
+    border-bottom: 1px solid #e0e0e0;
 }
 .main-header .container {
     display: flex;
@@ -79,145 +67,71 @@ p {
     color: var(--color-light);
     text-align: center;
     padding: 2rem;
-    z-index: 20;
-    position: relative;
 }
 
-/* === Sekcja gry === */
-.game-section {
-    text-align: center;
-    flex-grow: 1;
+/* === Główny kontener gry === */
+.game-container {
+    flex-grow: 1; /* Zajmuje całą dostępną przestrzeń */
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 0;
     overflow: hidden;
 }
 
-#game-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-/* Warstwa startowa */
-.pre-game-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-gray-light);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 2rem;
-    z-index: 3;
-    transition: opacity 0.5s ease;
-}
-#game-wrapper.game-active .pre-game-overlay {
-    opacity: 0;
-    pointer-events: none;
-}
-
-
-/* Tło z kamerą */
-.camera-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-#game-wrapper.game-active .camera-container {
-    
-}
 #camera-feed {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* POPRAWKA: Usunięto potencjalnie problematyczną właściwość transform */
-    /* transform: scaleX(-1); */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: 0;
+    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Efekt lustra */
 }
 
-/* Dolny panel z kontrolkami */
-.game-controls {
+.controls-panel {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: rgba(26, 26, 26, 0.85);
-    color: var(--color-light);
+    background: rgba(0, 0, 0, 0.7);
     padding: 2rem;
-    z-index: 2;
-    transform: translateY(100%);
-    transition: transform 0.5s ease;
-}
-#game-wrapper.game-active .game-controls {
-    transform: translateY(0);
-}
-.controls-container {
-    max-width: 1200px;
-    margin: 0 auto;
     display: flex;
-    justify-content: space-around;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 2rem;
+    gap: 1.5rem;
+    z-index: 10;
 }
-.learning-module, .prediction-module {
-    text-align: center;
+
+.prediction-output {
+    color: var(--color-light);
+    font-size: 2.4rem;
+    font-weight: 700;
+    min-height: 3rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
-.learning-module p, .prediction-module p {
-    font-size: 1.6rem;
-    margin-bottom: 1rem;
-}
+
 .buttons-group {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     flex-wrap: wrap;
     justify-content: center;
 }
-.prediction-text {
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: var(--color-light);
-    min-height: 4rem;
-}
-
 
 /* === Style przycisków === */
 .btn {
     display: inline-block;
     padding: 1rem 2.8rem;
     border-radius: 8px;
-    border: 2px solid transparent;
+    border: 2px solid var(--color-light);
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
+    background-color: transparent;
+    color: var(--color-light);
     transition: all 0.2s ease;
 }
-.btn-large {
-    font-size: 2.4rem;
-    padding: 1.5rem 4rem;
-}
-.btn-primary {
-    background-color: var(--color-primary);
-    color: var(--color-light);
-}
-.btn-primary:hover {
-    background-color: #a31545;
-}
-.btn-secondary {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: var(--color-light);
-    border-color: var(--color-light);
-}
-.btn-secondary:hover {
+
+.btn:hover {
     background-color: var(--color-light);
     color: var(--color-dark);
 }
