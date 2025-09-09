@@ -23,7 +23,7 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: var(--color-text);
-    background-color: var(--color-gray-light);
+    background-color: var(--color-dark);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -39,12 +39,12 @@ h1 {
     margin-bottom: 1.5rem;
     color: var(--color-dark);
 }
+p {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
 
 /* === Wspólny nagłówek i stopka === */
-.main-header, .main-footer {
-    position: relative;
-    z-index: 20; /* Aby były nad kamerą */
-}
 .main-header {
     background-color: var(--color-light);
     padding: 1.5rem 0;
@@ -52,6 +52,8 @@ h1 {
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--color-gray-dark);
+    position: relative;
+    z-index: 10;
 }
 .main-header .container {
     display: flex;
@@ -77,113 +79,87 @@ h1 {
     color: var(--color-light);
     text-align: center;
     padding: 2rem;
+    z-index: 10;
+    position: relative;
 }
 
 /* === Sekcja gry === */
 .game-section {
+    text-align: center;
     flex-grow: 1;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 4rem 0;
     overflow: hidden;
 }
 
-#game-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-/* Warstwa startowa */
-.pre-game-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-gray-light);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 2rem;
-    z-index: 10;
-    transition: opacity 0.5s ease;
-}
-
-/* Ukrywanie warstwy startowej po aktywacji gry */
-#game-wrapper.game-active .pre-game-overlay {
-    opacity: 0;
-    pointer-events: none;
-}
-
-
-/* Tło z kamerą */
+/* === ZMIANY DIAGNOSTYCZNE === */
 .camera-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-#game-wrapper.game-active .camera-container {
-    opacity: 1;
+    z-index: 9999; /* Ustawiony bardzo wysoki z-index */
 }
 #camera-feed {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transform: scaleX(-1);
+    border: 10px solid red; /* Dodana gruba, czerwona ramka */
+}
+/* === KONIEC ZMIAN DIAGNOSTYCZNYCH === */
+
+
+.game-content {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 4rem;
+    border-radius: 12px;
+    max-width: 600px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
 }
 
-/* Dolny panel z kontrolkami */
-.game-controls {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(26, 26, 26, 0.85); /* Ciemne, półprzezroczyste tło */
-    color: var(--color-light);
-    padding: 2rem;
-    z-index: 5;
-    transform: translateY(100%);
-    transition: transform 0.5s ease;
-}
-#game-wrapper.game-active .game-controls {
-    transform: translateY(0);
-}
-.controls-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 2rem;
-}
-.learning-module, .prediction-module {
-    text-align: center;
-}
-.learning-module p, .prediction-module p {
-    font-size: 1.6rem;
-    margin-bottom: 1rem;
-}
-.buttons-group {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
+.message {
+    font-size: 2.2rem;
+    font-weight: 700;
+    min-height: 3rem;
 }
 .prediction-text {
-    font-size: 2.8rem;
+    font-size: 1.8rem;
+    color: var(--color-primary);
     font-weight: 700;
-    color: var(--color-light);
-    min-height: 4rem;
+    min-height: 2.5rem;
+}
+.game-form {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+.guess-input {
+    width: 100px;
+    padding: 1.2rem;
+    border: 1px solid var(--color-gray-dark);
+    border-radius: 8px;
+    font-size: 2rem;
+    text-align: center;
+}
+.scores {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 3rem;
+    font-size: 1.8rem;
+}
+.scores span {
+    font-weight: 700;
+}
+.again-btn {
+    display: none;
 }
 
 
@@ -198,10 +174,6 @@ h1 {
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.btn-large {
-    font-size: 2.4rem;
-    padding: 1.5rem 4rem;
-}
 .btn-primary {
     background-color: var(--color-primary);
     color: var(--color-light);
@@ -210,11 +182,10 @@ h1 {
     background-color: #a31545;
 }
 .btn-secondary {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: var(--color-light);
-    border-color: var(--color-light);
+    background-color: var(--color-light);
+    color: var(--color-text);
+    border-color: var(--color-gray-dark);
 }
 .btn-secondary:hover {
-    background-color: var(--color-light);
-    color: var(--color-dark);
+    border-color: var(--color-primary);
 }
