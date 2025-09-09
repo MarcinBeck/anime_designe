@@ -139,7 +139,6 @@ h1, h2, h3 {
     align-items: center;
     text-align: center;
     color: var(--color-light);
-    /* ZMIANA: Półprzezroczysta warstwa przyciemniająca */
     background-color: rgba(0, 0, 0, 0.4);
 }
 .hero.full-screen {
@@ -179,6 +178,16 @@ h1, h2, h3 {
     border-color: var(--color-light);
 }
 
+/* Nowe style dla elementów parallax w sekcji HERO */
+.parallax-text-left, 
+.parallax-text-right, 
+.parallax-btn-left, 
+.parallax-btn-right {
+    will-change: transform; /* Optymalizacja wydajności */
+    transition: transform 0.1s ease-out; /* Płynne przejścia */
+}
+
+
 .scroll-down-arrow {
     position: absolute;
     bottom: 30px;
@@ -215,7 +224,7 @@ h1, h2, h3 {
 /* === GALLERY SECTION === */
 .gallery {
     padding: 6rem 0;
-    background-color: var(--color-light); /* DODANO: Białe tło, aby zakryć obrazek strony */
+    background-color: var(--color-light);
 }
 .gallery-intro, .accordion-intro, .newsletter-intro {
     text-align: center;
@@ -304,7 +313,6 @@ h1, h2, h3 {
 .accordion-section {
     padding: 6rem 0;
     position: relative;
-    /* ZMIANA: Ciemniejsza, półprzezroczysta warstwa */
     background-color: rgba(26, 26, 26, 0.9); 
 }
 .accordion-section .container {
@@ -352,7 +360,7 @@ h1, h2, h3 {
 /* === NEWSLETTER SECTION === */
 .newsletter-section {
     padding: 6rem 0;
-    background-color: var(--color-light); /* DODANO: Białe tło, aby zakryć obrazek strony */
+    background-color: var(--color-light);
 }
 .newsletter-form {
     display: flex;
