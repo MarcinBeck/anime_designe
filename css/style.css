@@ -24,7 +24,7 @@ body {
     color: var(--color-text);
     background-color: var(--color-dark); /* Kolor awaryjny */
     /* GŁÓWNA ZMIANA: Tło strony */
-    background-image: url('/anime_designe/img/device-frame.png');
+    background-image: url('/anime_designe/img/background-team.jpg');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed; /* Klucz do efektu "nieruchomego" tła */
