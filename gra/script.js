@@ -1,9 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // === SEKCJA 1: POBIERANIE ELEMENTÓW ZE STRONY (DOM) ===
+document.addEventListener('DOMContentLoaded', async () => {
+    // === NOWA LINIA: Wymuszenie użycia CPU zamiast WebGL (karty graficznej) ===
+    await tf.setBackend('cpu');
+    console.log('TensorFlow.js backend set to CPU.');
+
+    // === Elementy DOM ===
     const gameWrapper = document.getElementById('game-wrapper');
     const startBtn = document.getElementById('start-btn');
     const video = document.getElementById('camera-feed');
-    const canvas = document.getElementById('canvas'); // Canvas jest potrzebny do przetwarzania obrazu
+    const canvas = document.getElementById('canvas');
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
 
@@ -11,29 +15,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let mobilenetModel;
     let isPredicting = false;
 
-    // === SEKCJA 2: GŁÓWNE FUNKCJE APLIKACJI ===
-
-    /**
-     * Główna funkcja inicjująca. Uruchamia kamerę i ładuje modele AI.
-     */
+    // === GŁÓWNA FUNKCJA INICJUJĄCA ===
     async function init() {
         console.log('Inicjalizacja...');
         predictionText.innerText = 'Uruchamianie kamery...';
         
-        // 1. Uruchom kamerę
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
-            await video.play(); // Upewnij się, że wideo gra
+            await video.play();
         } catch (error) {
             console.error("Błąd dostępu do kamery.", error);
-            predictionText.innerText = "Błąd dostępu do kamery!";
-            return; // Przerwij, jeśli nie ma dostępu do kamery
+            predictionText.innerText = "Błąd kamery!";
+            return;
         }
 
         predictionText.innerText = 'Ładowanie modeli AI...';
 
-        // 2. Załaduj modele AI (KNN Classifier i MobileNet)
         try {
             classifier = knnClassifier.create();
             mobilenetModel = await mobilenet.load();
@@ -45,23 +43,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 3. Rozpocznij pętlę przewidywania
         isPredicting = true;
         predict();
     }
 
-    /**
-     * Dodaje aktualny obraz z kamery jako przykład do nauki dla danej klasy (gestu).
-     * @param {string} classId - ID klasy (0, 1, 2, etc.)
-     */
+    // === FUNKCJA DODAJĄCA PRZYKŁADY DO NAUKI ===
     function addExample(classId) {
         if (!mobilenetModel) {
-            console.log('Model MobileNet nie jest jeszcze gotowy.');
+            console.log('Model MobileNet nie jest załadowany.');
             return;
         }
-        // Pobierz "cechy" obrazu z kamery za pomocą MobileNet
         const features = mobilenetModel.infer(video, true);
-        // Dodaj te cechy do klasyfikatora KNN, przypisując je do danej klasy
         classifier.addExample(features, classId);
         
         const friendlyClassName = parseInt(classId) + 1;
@@ -69,17 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
         predictionText.innerText = `Dodano przykład dla gestu ${friendlyClassName}!`;
     }
 
-    /**
-     * Pętla, która w czasie rzeczywistym odgaduje, co widzi kamera.
-     */
+    // === FUNKCJA PRZEWIDUJĄCA GEST ===
     async function predict() {
-        // Kontynuuj tylko jeśli gra jest w trybie przewidywania
         if (isPredicting) {
-            // Sprawdź, czy model został już czegoś nauczony
             if (classifier.getNumClasses() > 0) {
-                // Pobierz cechy z aktualnego obrazu kamery
                 const features = mobilenetModel.infer(video, true);
-                // Uzyskaj wynik (przewidywanie) z klasyfikatora KNN
                 const result = await classifier.predictClass(features);
                 
                 const friendlyClassName = parseInt(result.label) + 1;
@@ -87,26 +73,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 predictionText.innerText = `Gest ${friendlyClassName}, pewność: ${confidence}%`;
             }
-            // Uruchom funkcję ponownie w następnej klatce animacji, tworząc pętlę
             window.requestAnimationFrame(predict);
         }
     }
 
-    // === SEKCJA 3: NASŁUCHIWANIE NA ZDARZENIA (EVENT LISTENERS) ===
-
-    // Reakcja na kliknięcie przycisku START
+    // === NASŁUCHIWANIE NA ZDARZENIA ===
     startBtn.addEventListener('click', () => {
-        gameWrapper.classList.add('game-active'); // Pokazuje kamerę i kontrolki
-        init(); // Uruchom kamerę i załaduj AI
+        gameWrapper.classList.add('game-active');
+        init();
     });
 
-    // Reakcja na kliknięcie przycisków "Dodaj przykład"
     addExampleButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const classId = button.dataset.classId; // Pobierz ID klasy z atrybutu data-
+            const classId = button.dataset.classId;
             addExample(classId);
 
-            // Prosty efekt wizualny po kliknięciu
             button.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 button.style.transform = 'scale(1)';
