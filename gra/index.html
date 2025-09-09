@@ -3,33 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
-    <link rel="stylesheet" href="style.css?v=3.0.2" />
-    <title>Strona Główna - Projekt AI</title>
+    
+    <title>Zgadnij Liczbę - Anime Designe</title>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div id="version-info">
-            <span>version: 3.0.7</span>
-            <span>29 sierpnia 2025, 15:41</span>
+
+    <header class="main-header">
+        <div class="container">
+            <a href="../index.html" class="logo-link">
+                <img class="logo-img" src="../img/logo.png" alt="Logo" />
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../index.html#gallery">Galeria</a></li>
+                    <li><a href="../desktop-3.html">Kontakt</a></li>
+                    <li><a href="index.html">Gra</a></li>
+                </ul>
+            </nav>
         </div>
-        <h1>Projekt AI</h1>
     </header>
-    <main>
-        <div class="hub-container">
-            <div class="logo">🧠</div>
-            <p class="hub-description">Wybierz jedną z dostępnych opcji, aby kontynuować.</p>
-            <div class="hub-actions">
-                <a href="app.html" class="hub-card">
-                    <h2>Uruchom Aplikację</h2>
-                    <p>Wykrywaj twarz i ucz model rozpoznawania symboli.</p>
-                </a>
-                <a href="stats.html" class="hub-card">
-                    <h2>Zobacz Statystyki</h2>
-                    <p>Analizuj postępy w nauce modelu na wykresach.</p>
-                </a>
+
+    <main class="game-section">
+        <div class="container">
+            <h1>Zgadnij liczbę od 1 do 100</h1>
+            <p class="message">Zacznij zgadywać...</p>
+            <form class="game-form">
+                <input type="number" class="guess-input" min="1" max="100">
+                <button class="btn btn-primary" type="submit">Zgadnij!</button>
+            </form>
+            <div class="scores">
+                <p>❤️ Pozostało prób: <span class="score">10</span></p>
+                <p>🏆 Najlepszy wynik: <span class="highscore">0</span></p>
             </div>
+            <button class="btn btn-secondary again-btn">Zagraj ponownie!</button>
         </div>
     </main>
+
+    <footer class="main-footer">
+        <p>Anime Designe &copy; 2025</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
