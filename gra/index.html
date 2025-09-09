@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zgadnij Liczbę - Gra z AI</title>
+    <title>Gra AI - Uczenie Gestów</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,23 +27,34 @@
     </header>
 
     <main class="game-section">
-        <div class="camera-container">
-            <video id="camera-feed" autoplay playsinline></video>
-            <canvas id="canvas" style="display: none;"></canvas>
-        </div>
-        
-        <div class="container game-content">
-            <h1>Zgadnij liczbę (1-100)</h1>
-            <p class="message">Zacznij zgadywać...</p>
-            <p id="prediction" class="prediction-text"></p> <form class="game-form">
-                <input type="number" class="guess-input" min="1" max="100">
-                <button class="btn btn-primary" type="submit">Zgadnij!</button>
-            </form>
-            <div class="scores">
-                <p>❤️ Pozostało prób: <span class="score">10</span></p>
-                <p>🏆 Najlepszy wynik: <span class="highscore">0</span></p>
+        <div id="game-wrapper">
+            <div class="pre-game-overlay">
+                <h1>Gra AI: Naucz maszynę rozpoznawać gesty</h1>
+                <p>Kliknij start, aby uruchomić kamerę i rozpocząć uczenie.</p>
+                <button id="start-btn" class="btn btn-primary btn-large">START</button>
             </div>
-            <button class="btn btn-secondary again-btn" style="display: none;">Zagraj ponownie!</button>
+
+            <div class="camera-container">
+                <video id="camera-feed" autoplay playsinline></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+
+            <div class="game-controls">
+                <div class="controls-container">
+                    <div class="learning-module">
+                        <p>Naucz AI rozpoznawać gesty:</p>
+                        <div class="buttons-group">
+                            <button class="btn btn-secondary" data-class-id="0">Dodaj przykład "Gest 1"</button>
+                            <button class="btn btn-secondary" data-class-id="1">Dodaj przykład "Gest 2"</button>
+                            <button class="btn btn-secondary" data-class-id="2">Dodaj przykład "Gest 3"</button>
+                        </div>
+                    </div>
+                    <div class="prediction-module">
+                        <p>AI rozpoznaje:</p>
+                        <div id="prediction" class="prediction-text">...</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -52,10 +63,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
     
     <script src="script.js" defer></script>
 </body>
