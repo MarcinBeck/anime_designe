@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Zgadnij Liczbę - Anime Designe</title>
-    
+    <title>Zgadnij Liczbę - Gra z AI</title>
     <link rel="stylesheet" href="style.css">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -36,9 +33,9 @@
         </div>
         
         <div class="container game-content">
-            <h1>Zgadnij liczbę od 1 do 100</h1>
+            <h1>Zgadnij liczbę (1-100)</h1>
             <p class="message">Zacznij zgadywać...</p>
-            <form class="game-form">
+            <p id="prediction" class="prediction-text"></p> <form class="game-form">
                 <input type="number" class="guess-input" min="1" max="100">
                 <button class="btn btn-primary" type="submit">Zgadnij!</button>
             </form>
@@ -46,8 +43,7 @@
                 <p>❤️ Pozostało prób: <span class="score">10</span></p>
                 <p>🏆 Najlepszy wynik: <span class="highscore">0</span></p>
             </div>
-            <div id="prediction"></div>
-            <button class="btn btn-secondary again-btn">Zagraj ponownie!</button>
+            <button class="btn btn-secondary again-btn" style="display: none;">Zagraj ponownie!</button>
         </div>
     </main>
 
@@ -55,8 +51,12 @@
         <p>Anime Designe &copy; 2025</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script src="script.js" defer></script>
 </body>
 </html>
