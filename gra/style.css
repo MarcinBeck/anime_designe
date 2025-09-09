@@ -23,7 +23,7 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: var(--color-text);
-    background-color: var(--color-gray-light); /* Jasnoszare tło dla spójności */
+    background-color: var(--color-dark); /* Ciemne tło jako fallback */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -52,6 +52,8 @@ p {
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--color-gray-dark);
+    position: relative; /* Usunięto sticky dla uproszczenia na tej podstronie */
+    z-index: 10;
 }
 .main-header .container {
     display: flex;
@@ -77,22 +79,53 @@ p {
     color: var(--color-light);
     text-align: center;
     padding: 2rem;
-    margin-top: auto; /* Wypycha stopkę na dół strony */
+    z-index: 10;
+    position: relative;
 }
 
-/* === Sekcja gry === */
+/* === Sekcja gry - ZMIANY === */
 .game-section {
-    padding: 6rem 0;
     text-align: center;
-    flex-grow: 1; /* Pozwala sekcji gry rozciągnąć się i zająć dostępną przestrzeń */
+    flex-grow: 1;
+    position: relative; /* Konieczne do pozycjonowania tła i treści */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+    overflow: hidden; /* Ukryj części wideo wychodzące poza sekcję */
 }
-.game-section .container {
-    max-width: 600px; /* Mniejszy kontener dla lepszego wyglądu gry */
+
+/* Nowe style dla tła z kamerki */
+.camera-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; /* Tło pod treścią */
 }
+#camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Wypełnij całą przestrzeń, przycinając obraz */
+    transform: scaleX(-1); /* Odbicie lustrzane dla naturalnego efektu */
+}
+
+/* Nowe style dla treści gry nałożonej na wideo */
+.game-content {
+    position: relative;
+    z-index: 1; /* Treść nad tłem */
+    background-color: rgba(255, 255, 255, 0.8); /* Półprzezroczyste tło dla czytelności */
+    padding: 4rem;
+    border-radius: 12px;
+    max-width: 600px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
 .message {
     font-size: 2.2rem;
     font-weight: 700;
-    min-height: 5rem; /* Stała wysokość, aby layout nie skakał */
+    min-height: 5rem;
 }
 .game-form {
     display: flex;
@@ -118,11 +151,11 @@ p {
     font-weight: 700;
 }
 .again-btn {
-    display: none; /* Ukryty na początku */
+    display: none;
 }
 
 
-/* === Style przycisków (takie same jak na stronie głównej) === */
+/* === Style przycisków === */
 .btn {
     display: inline-block;
     padding: 1rem 2.8rem;
