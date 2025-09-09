@@ -1,53 +1,150 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { font-size: 62.5%; }
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #e5e7eb; background-color: #0f172a; text-align: center; }
-header { position: relative; padding: 2rem; border-bottom: 2px solid #1f2937; width: 100%; }
-h1 { font-size: 3rem; }
-main { display: flex; justify-content: center; padding: 2rem; }
-.app-container { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
-.video-container { display: grid; width: 100%; max-width: 500px; }
-video, #overlay { grid-area: 1 / 1 / 2 / 2; width: 100%; border-radius: 12px; }
-#overlay { z-index: 10; }
-video { border: 2px solid #1f2937; background: #000; }
-button { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; padding: 1rem 1.5rem; border-radius: 10px; cursor: pointer; font-size: 1.6rem; transition: background-color 0.2s; }
-button:hover:not(:disabled) { background: #374151; }
-button:disabled { background: #1e293b; color: #475569; cursor: not-allowed; border-color: #334155; }
-.controls, .classes { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+/* === Zmienne kolorów i stylów ze strony głównej === */
+:root {
+    --color-primary: #c2185b;
+    --color-magenta: #c2185b; 
+    --color-dark: #1a1a1a;
+    --color-light: #ffffff;
+    --color-gray-light: #f5f5f5;
+    --color-gray-dark: #e0e0e0;
+    --color-text: #333;
+}
 
-/* TA LOGIKA ODPOWIADA ZA POKAZYWANIE I UKRYWANIE SEKCJI */
-.symbol-section {
+/* === Style globalne === */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+html {
+    font-size: 62.5%; 
+}
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    background-color: var(--color-gray-light); /* Jasnoszare tło dla spójności */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    width: 100%;
+    min-height: 100vh;
 }
-.symbol-section.hidden {
-    display: none;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    width: 100%; 
+}
+h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+}
+p {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
 }
 
-.status { font-size: 1.4rem; color: #94a3b8; min-height: 20px; }
-#prediction-area { min-height: 100px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; border: 1px dashed #334155; border-radius: 8px; }
-.prediction { font-size: 2.2rem; font-weight: bold; color: #38bdf8; margin-bottom: 1rem; }
-.feedback-prompt { font-size: 1.6rem; margin-bottom: 1rem; color: #cbd5e1; }
-.feedback-actions button { margin: 0 5px; font-size: 1.4rem; padding: 0.8rem 1.2rem; }
-.gallery-container { width: 100%; max-width: 520px; margin-top: 2rem; }
-.gallery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.clear-button { font-size: 1.4rem; padding: 0; background: none; border: none; color: #94a3b8; text-decoration: underline; }
-.clear-button:hover:not(:disabled) { color: #e5e7eb; }
-.gallery { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; border: 1px solid #1f2937; padding: 1rem; border-radius: 8px; min-height: 112px; }
-.gallery img { width: 100px; height: 100px; object-fit: cover; border: 2px solid #374151; border-radius: 8px; }
-#auth-container { position: absolute; top: 2rem; right: 2rem; font-size: 1.6rem; text-align: right; }
-#auth-container .welcome-message { display: block; margin-bottom: 8px; }
-#auth-container button { font-size: 1.4rem; padding: 1rem 1.5rem; cursor: pointer; border: 1px solid #eee; background: none; color: #eee; }
-#auth-container button.logout-btn { border: none; text-decoration: underline; padding: 0; color: #aaa; }
-#version-info { position: absolute; top: 2rem; left: 2rem; font-size: 1.2rem; color: #94a3b8; text-align: left; line-height: 1.4; }
-#version-info span, #version-info a { display: block; }
-.stats-link { color: #38bdf8; text-decoration: none; margin-top: 8px; display: inline-block; }
-.stats-link:hover { text-decoration: underline; }
-#toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 10000; display: flex; flex-direction: column; gap: 1rem; }
-.toast { padding: 1.5rem 2rem; border-radius: 8px; color: #fff; font-size: 1.6rem; opacity: 0; transform: translateX(100%); animation: slideIn 0.5s forwards; }
-.toast.info { background-color: #38bdf8; }
-.toast.success { background-color: #4ade80; }
-.toast.error { background-color: #f472b6; }
-@keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+/* === Wspólny nagłówek i stopka === */
+.main-header {
+    background-color: var(--color-light);
+    padding: 1.5rem 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-gray-dark);
+}
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo-img {
+    height: 5rem;
+}
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 3rem;
+}
+.main-nav a {
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--color-magenta);
+}
+.main-footer {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    text-align: center;
+    padding: 2rem;
+    margin-top: auto; /* Wypycha stopkę na dół strony */
+}
+
+/* === Sekcja gry === */
+.game-section {
+    padding: 6rem 0;
+    text-align: center;
+    flex-grow: 1; /* Pozwala sekcji gry rozciągnąć się i zająć dostępną przestrzeń */
+}
+.game-section .container {
+    max-width: 600px; /* Mniejszy kontener dla lepszego wyglądu gry */
+}
+.message {
+    font-size: 2.2rem;
+    font-weight: 700;
+    min-height: 5rem; /* Stała wysokość, aby layout nie skakał */
+}
+.game-form {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+.guess-input {
+    width: 100px;
+    padding: 1.2rem;
+    border: 1px solid var(--color-gray-dark);
+    border-radius: 8px;
+    font-size: 2rem;
+    text-align: center;
+}
+.scores {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 3rem;
+    font-size: 1.8rem;
+}
+.scores span {
+    font-weight: 700;
+}
+.again-btn {
+    display: none; /* Ukryty na początku */
+}
+
+
+/* === Style przycisków (takie same jak na stronie głównej) === */
+.btn {
+    display: inline-block;
+    padding: 1rem 2.8rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    font-size: 1.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-light);
+}
+.btn-primary:hover {
+    background-color: #a31545;
+}
+.btn-secondary {
+    background-color: var(--color-light);
+    color: var(--color-text);
+    border-color: var(--color-gray-dark);
+}
+.btn-secondary:hover {
+    border-color: var(--color-primary);
+}
