@@ -1,129 +1,117 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // === Elementy DOM gry i kamery ===
+    // === SEKCJA 1: POBIERANIE ELEMENTÓW ZE STRONY (DOM) ===
+    const gameWrapper = document.getElementById('game-wrapper');
+    const startBtn = document.getElementById('start-btn');
     const video = document.getElementById('camera-feed');
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas'); // Canvas jest potrzebny do przetwarzania obrazu
     const predictionText = document.getElementById('prediction');
-    const messageEl = document.querySelector('.message');
-    const scoreEl = document.querySelector('.score');
-    const highscoreEl = document.querySelector('.highscore');
-    const guessInput = document.querySelector('.guess-input');
-    const form = document.querySelector('.game-form');
-    const againBtn = document.querySelector('.again-btn');
-    
-    let model;
+    const addExampleButtons = document.querySelectorAll('.learning-module .btn');
 
-    // === Konfiguracja Firebase (wstaw swoje dane) ===
-    const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
-    };
+    let classifier;
+    let mobilenetModel;
+    let isPredicting = false;
 
-    // Inicjalizacja Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    // === SEKCJA 2: GŁÓWNE FUNKCJE APLIKACJI ===
 
-    // === Logika kamery i AI (Coco-SSD) ===
-    if (canvas && video) {
-        const ctx = canvas.getContext('2d');
-
-        async function setupCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-            } catch (error) {
-                console.error("Błąd dostępu do kamery.", error);
-                predictionText.innerText = "Nie można uzyskać dostępu do kamery.";
-            }
+    /**
+     * Główna funkcja inicjująca. Uruchamia kamerę i ładuje modele AI.
+     */
+    async function init() {
+        console.log('Inicjalizacja...');
+        predictionText.innerText = 'Uruchamianie kamery...';
+        
+        // 1. Uruchom kamerę
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            await video.play(); // Upewnij się, że wideo gra
+        } catch (error) {
+            console.error("Błąd dostępu do kamery.", error);
+            predictionText.innerText = "Błąd dostępu do kamery!";
+            return; // Przerwij, jeśli nie ma dostępu do kamery
         }
 
-        async function predict() {
-            if (model && video.readyState === 4) {
-                ctx.drawImage(video, 0, 0, 224, 224); // Rysuj klatkę na canvas
-                const predictions = await model.detect(canvas);
-                
-                if (predictions.length > 0) {
-                    const detectedObjects = predictions.map(p => p.class).join(', ');
-                    predictionText.innerText = `Widzę: ${detectedObjects}`;
-                } else {
-                    predictionText.innerText = 'Nic nie wykryto...';
-                }
-            }
-            requestAnimationFrame(predict);
+        predictionText.innerText = 'Ładowanie modeli AI...';
+
+        // 2. Załaduj modele AI (KNN Classifier i MobileNet)
+        try {
+            classifier = knnClassifier.create();
+            mobilenetModel = await mobilenet.load();
+            console.log('Modele AI załadowane, kamera gotowa.');
+            predictionText.innerText = 'Pokaż gest i dodaj przykłady...';
+        } catch (error) {
+            console.error("Błąd ładowania modeli AI.", error);
+            predictionText.innerText = "Błąd modeli AI!";
+            return;
         }
 
-        async function initAI() {
-            await setupCamera();
-            video.addEventListener('loadeddata', async () => {
-                model = await cocoSsd.load();
-                predict();
-            });
-        }
-        initAI();
-    } else {
-        console.error("Brak elementu video lub canvas na stronie!");
+        // 3. Rozpocznij pętlę przewidywania
+        isPredicting = true;
+        predict();
     }
 
-    // === Logika gry w zgadywanie ===
-    let secretNumber, score, highscore;
-
-    const initGame = () => {
-        secretNumber = Math.trunc(Math.random() * 100) + 1;
-        score = 10;
-        scoreEl.textContent = score;
-        messageEl.textContent = 'Zacznij zgadywać...';
-        guessInput.value = '';
-        guessInput.disabled = false;
-        form.querySelector('button').disabled = false;
-        againBtn.style.display = 'none';
-        document.querySelector('.game-content').style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
-    };
-    
-    database.ref('highscore').on('value', (snapshot) => {
-        highscore = snapshot.val() || 0;
-        highscoreEl.textContent = highscore;
-    });
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const guess = Number(guessInput.value);
-
-        if (!guess || guess < 1 || guess > 100) {
-            messageEl.textContent = '⛔️ Wpisz liczbę od 1 do 100!';
-        } else if (guess === secretNumber) {
-            messageEl.textContent = '🎉 Wygrałeś!';
-            if (score > highscore) {
-                highscore = score;
-                highscoreEl.textContent = highscore;
-                database.ref('highscore').set(highscore);
-            }
-            guessInput.disabled = true;
-            form.querySelector('button').disabled = true;
-            againBtn.style.display = 'inline-block';
-            document.querySelector('.game-content').style.backgroundColor = 'rgba(96, 179, 71, 0.85)'; // Zielony
-        } else if (guess !== secretNumber) {
-            if (score > 1) {
-                messageEl.textContent = guess > secretNumber ? '📈 Za wysoko!' : '📉 Za nisko!';
-                score--;
-                scoreEl.textContent = score;
-            } else {
-                messageEl.textContent = '💥 Przegrałeś!';
-                scoreEl.textContent = 0;
-                guessInput.disabled = true;
-                form.querySelector('button').disabled = true;
-                againBtn.style.display = 'inline-block';
-                document.querySelector('.game-content').style.backgroundColor = 'rgba(255, 107, 107, 0.85)'; // Czerwony
-            }
+    /**
+     * Dodaje aktualny obraz z kamery jako przykład do nauki dla danej klasy (gestu).
+     * @param {string} classId - ID klasy (0, 1, 2, etc.)
+     */
+    function addExample(classId) {
+        if (!mobilenetModel) {
+            console.log('Model MobileNet nie jest jeszcze gotowy.');
+            return;
         }
+        // Pobierz "cechy" obrazu z kamery za pomocą MobileNet
+        const features = mobilenetModel.infer(video, true);
+        // Dodaj te cechy do klasyfikatora KNN, przypisując je do danej klasy
+        classifier.addExample(features, classId);
+        
+        const friendlyClassName = parseInt(classId) + 1;
+        console.log(`Dodano przykład dla klasy ${friendlyClassName}`);
+        predictionText.innerText = `Dodano przykład dla gestu ${friendlyClassName}!`;
+    }
+
+    /**
+     * Pętla, która w czasie rzeczywistym odgaduje, co widzi kamera.
+     */
+    async function predict() {
+        // Kontynuuj tylko jeśli gra jest w trybie przewidywania
+        if (isPredicting) {
+            // Sprawdź, czy model został już czegoś nauczony
+            if (classifier.getNumClasses() > 0) {
+                // Pobierz cechy z aktualnego obrazu kamery
+                const features = mobilenetModel.infer(video, true);
+                // Uzyskaj wynik (przewidywanie) z klasyfikatora KNN
+                const result = await classifier.predictClass(features);
+                
+                const friendlyClassName = parseInt(result.label) + 1;
+                const confidence = Math.round(result.confidences[result.label] * 100);
+
+                predictionText.innerText = `Gest ${friendlyClassName}, pewność: ${confidence}%`;
+            }
+            // Uruchom funkcję ponownie w następnej klatce animacji, tworząc pętlę
+            window.requestAnimationFrame(predict);
+        }
+    }
+
+    // === SEKCJA 3: NASŁUCHIWANIE NA ZDARZENIA (EVENT LISTENERS) ===
+
+    // Reakcja na kliknięcie przycisku START
+    startBtn.addEventListener('click', () => {
+        gameWrapper.classList.add('game-active'); // Pokazuje kamerę i kontrolki
+        init(); // Uruchom kamerę i załaduj AI
     });
 
-    againBtn.addEventListener('click', initGame);
+    // Reakcja na kliknięcie przycisków "Dodaj przykład"
+    addExampleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const classId = button.dataset.classId; // Pobierz ID klasy z atrybutu data-
+            addExample(classId);
 
-    // Inicjalizacja gry przy pierwszym załadowaniu
-    initGame();
+            // Prosty efekt wizualny po kliknięciu
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 100);
+        });
+    });
+
 });
-
