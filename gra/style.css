@@ -1,38 +1,31 @@
-/* === Zmienne kolorów i stylów ze strony głównej === */
+/* === Zmienne kolorów === */
 :root {
     --color-primary: #c2185b;
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
     --color-text: #333;
+    --color-stop-red: #d32f2f;
 }
 
 /* === Style globalne === */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-html {
-    font-size: 62.5%; 
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
     font-size: 1.6rem;
     line-height: 1.7;
     color: var(--color-text);
-    background-color: var(--color-dark);
+    background-color: #f5f5f5;
+}
+#game-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    overflow: hidden; /* Zapobiega przewijaniu na stronie gry */
+    overflow: hidden;
 }
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    width: 100%; 
-}
+.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
+h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 
 /* === Wspólny nagłówek i stopka === */
 .main-header {
@@ -43,25 +36,10 @@ body {
     align-items: center;
     border-bottom: 1px solid #e0e0e0;
 }
-.main-header .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.logo-img {
-    height: 5rem;
-}
-.main-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 3rem;
-}
-.main-nav a {
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 2rem;
-    color: var(--color-magenta);
-}
+.main-header .container { display: flex; justify-content: space-between; align-items: center; }
+.logo-img { height: 5rem; }
+.main-nav ul { list-style: none; display: flex; gap: 3rem; }
+.main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: var(--color-magenta); }
 .main-footer {
     background-color: var(--color-dark);
     color: var(--color-light);
@@ -70,12 +48,42 @@ body {
 }
 
 /* === Główny kontener gry === */
-.game-container {
-    flex-grow: 1; /* Zajmuje całą dostępną przestrzeń */
+.game-container-main {
+    flex-grow: 1;
     position: relative;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* Ekran startowy */
+#start-screen {
+    text-align: center;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+/* Kamera i kontrolki - domyślnie ukryte */
+#camera-feed, .controls-panel {
+    display: none;
+}
+
+/* Stan aktywny gry - włączany przez JS */
+#game-container.game-active #start-screen {
+    opacity: 0;
+    pointer-events: none;
+}
+#game-container.game-active #camera-feed,
+#game-container.game-active .controls-panel {
+    display: flex; /* lub block, w zależności od elementu */
+}
+
+/* Wideo jako tło */
 #camera-feed {
     position: absolute;
     top: 50%;
@@ -85,9 +93,10 @@ body {
     width: auto;
     height: auto;
     z-index: 0;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Efekt lustra */
+    transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
 
+/* Panel z kontrolkami */
 .controls-panel {
     position: absolute;
     bottom: 0;
@@ -95,12 +104,16 @@ body {
     width: 100%;
     background: rgba(0, 0, 0, 0.7);
     padding: 2rem;
-    display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 1.5rem;
     z-index: 10;
+    flex-wrap: wrap;
 }
+.prediction-output-wrapper { flex-basis: 100%; text-align: center; order: 1; }
+.buttons-group { flex-grow: 1; display: flex; gap: 1.5rem; justify-content: center; order: 2; }
+.stop-button-wrapper { order: 3; }
 
 .prediction-output {
     color: var(--color-light);
@@ -110,14 +123,7 @@ body {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
-.buttons-group {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-/* === Style przycisków === */
+/* Style przycisków */
 .btn {
     display: inline-block;
     padding: 1rem 2.8rem;
@@ -130,8 +136,10 @@ body {
     color: var(--color-light);
     transition: all 0.2s ease;
 }
-
-.btn:hover {
-    background-color: var(--color-light);
-    color: var(--color-dark);
-}
+.btn:hover { background-color: var(--color-light); color: var(--color-dark); }
+.btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
+.btn-large:hover { background-color: var(--color-primary); color: var(--color-light); }
+.btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); }
+.btn-primary:hover { background-color: #a31545; border-color: #a31545; }
+.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); }
+.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
