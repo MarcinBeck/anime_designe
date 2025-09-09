@@ -53,7 +53,7 @@ p {
     align-items: center;
     border-bottom: 1px solid var(--color-gray-dark);
     position: relative;
-    z-index: 10;
+    z-index: 20; /* Najwyższy z-index, aby zawsze był na wierzchu */
 }
 .main-header .container {
     display: flex;
@@ -79,87 +79,114 @@ p {
     color: var(--color-light);
     text-align: center;
     padding: 2rem;
-    z-index: 10;
+    z-index: 20; /* Najwyższy z-index, aby zawsze był na wierzchu */
     position: relative;
 }
 
 /* === Sekcja gry === */
 .game-section {
-    text-align: center;
     flex-grow: 1;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 0;
     overflow: hidden;
 }
 
-/* === ZMIANY DIAGNOSTYCZNE === */
+#game-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Warstwa startowa */
+.pre-game-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-gray-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    z-index: 3; /* Na samym wierzchu, nad kamerą */
+    transition: opacity 0.5s ease;
+}
+#game-wrapper.game-active .pre-game-overlay {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* Tło z kamerą */
 .camera-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999; /* Ustawiony bardzo wysoki z-index */
+    z-index: 1; /* Warstwa tła, pod wszystkim innym */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+#game-wrapper.game-active .camera-container {
+    opacity: 1;
 }
 #camera-feed {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transform: scaleX(-1);
-    border: 10px solid red; /* Dodana gruba, czerwona ramka */
-}
-/* === KONIEC ZMIAN DIAGNOSTYCZNYCH === */
-
-
-.game-content {
-    position: relative;
-    z-index: 1;
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 4rem;
-    border-radius: 12px;
-    max-width: 600px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    /* Usunięta czerwona ramka */
 }
 
-.message {
-    font-size: 2.2rem;
-    font-weight: 700;
-    min-height: 3rem;
+/* Dolny panel z kontrolkami */
+.game-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(26, 26, 26, 0.85);
+    color: var(--color-light);
+    padding: 2rem;
+    z-index: 2; /* Nad kamerą, ale pod ekranem startowym */
+    transform: translateY(100%);
+    transition: transform 0.5s ease;
 }
-.prediction-text {
-    font-size: 1.8rem;
-    color: var(--color-primary);
-    font-weight: 700;
-    min-height: 2.5rem;
+#game-wrapper.game-active .game-controls {
+    transform: translateY(0);
 }
-.game-form {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 3rem;
-}
-.guess-input {
-    width: 100px;
-    padding: 1.2rem;
-    border: 1px solid var(--color-gray-dark);
-    border-radius: 8px;
-    font-size: 2rem;
-    text-align: center;
-}
-.scores {
+.controls-container {
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-around;
-    margin-bottom: 3rem;
-    font-size: 1.8rem;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
 }
-.scores span {
+.learning-module, .prediction-module {
+    text-align: center;
+}
+.learning-module p, .prediction-module p {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+.buttons-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.prediction-text {
+    font-size: 2.8rem;
     font-weight: 700;
-}
-.again-btn {
-    display: none;
+    color: var(--color-light);
+    min-height: 4rem;
 }
 
 
@@ -174,6 +201,10 @@ p {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+.btn-large {
+    font-size: 2.4rem;
+    padding: 1.5rem 4rem;
+}
 .btn-primary {
     background-color: var(--color-primary);
     color: var(--color-light);
@@ -182,10 +213,11 @@ p {
     background-color: #a31545;
 }
 .btn-secondary {
-    background-color: var(--color-light);
-    color: var(--color-text);
-    border-color: var(--color-gray-dark);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--color-light);
+    border-color: var(--color-light);
 }
 .btn-secondary:hover {
-    border-color: var(--color-primary);
+    background-color: var(--color-light);
+    color: var(--color-dark);
 }
