@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
+<div id="game-container">
     <header class="main-header">
         <div class="container">
             <a href="../index.html" class="logo-link">
@@ -26,18 +26,27 @@
         </div>
     </header>
 
-    <main class="game-container">
-        <!-- Elementy wideo i canvas do przechwytywania obrazu -->
+    <main class="game-container-main">
+        <div id="start-screen">
+            <h1>Gra AI: Naucz maszynę rozpoznawać gesty</h1>
+            <p>Kliknij start, aby uruchomić kamerę i rozpocząć uczenie.</p>
+            <button id="start-btn" class="btn btn-primary btn-large">START</button>
+        </div>
+
         <video id="camera-feed" autoplay playsinline></video>
         <canvas id="canvas" style="display: none;"></canvas>
 
-        <!-- Panel z kontrolkami nałożony na wideo -->
-        <div class="controls-panel">
-            <div id="prediction" class="prediction-output">Uruchamianie kamery...</div>
+        <div id="controls-panel" class="controls-panel">
+            <div class="prediction-output-wrapper">
+                <div id="prediction" class="prediction-output">Uruchamianie...</div>
+            </div>
             <div class="buttons-group">
                 <button id="add-example-0" class="btn">Dodaj przykład "Gest 1"</button>
                 <button id="add-example-1" class="btn">Dodaj przykład "Gest 2"</button>
                 <button id="add-example-2" class="btn">Dodaj przykład "Gest 3"</button>
+            </div>
+            <div class="stop-button-wrapper">
+                <button id="stop-btn" class="btn btn-stop">STOP</button>
             </div>
         </div>
     </main>
@@ -45,13 +54,12 @@
     <footer class="main-footer">
         <p>Anime Designe &copy; 2025</p>
     </footer>
+</div>
 
-    <!-- Biblioteki TensorFlow.js i KNN Classifier (z oryginalnego projektu) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
     
-    <!-- Główny skrypt gry -->
     <script src="script.js" defer></script>
 </body>
 </html>
