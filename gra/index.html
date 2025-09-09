@@ -32,6 +32,7 @@
     <main class="game-section">
         <div class="camera-container">
             <video id="camera-feed" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
         </div>
         
         <div class="container game-content">
@@ -45,6 +46,7 @@
                 <p>❤️ Pozostało prób: <span class="score">10</span></p>
                 <p>🏆 Najlepszy wynik: <span class="highscore">0</span></p>
             </div>
+            <div id="prediction"></div>
             <button class="btn btn-secondary again-btn">Zagraj ponownie!</button>
         </div>
     </main>
