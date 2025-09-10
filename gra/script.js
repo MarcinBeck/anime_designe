@@ -1,4 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await tf.setBackend('cpu');
+    console.log('TensorFlow.js backend ustawiony na CPU.');
+
+    // === Konfiguracja Firebase (wstaw swoje dane!) ===
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        databaseURL: "YOUR_DATABASE_URL",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     // === Elementy DOM ===
     const gameContainer = document.getElementById('game-container');
     const startBtn = document.getElementById('start-btn');
@@ -7,8 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
+    const saveModelBtn = document.getElementById('save-model-btn');
+    const loadModelBtn = document.getElementById('load-model-btn');
     const exampleCounterSpan = document.getElementById('example-counter');
-    
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
     const btnYes = document.getElementById('feedback-yes');
@@ -28,9 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function stopGame() {
-        if (videoStream) {
-            videoStream.getTracks().forEach(track => track.stop());
-        }
+        if (videoStream) videoStream.getTracks().forEach(track => track.stop());
         video.srcObject = null;
         gameContainer.classList.remove('game-active');
         resetGame();
@@ -48,26 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initCameraAndAI() {
-        await tf.setBackend('cpu');
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             videoStream = stream;
             video.srcObject = stream;
             await video.play();
-        } catch (error) {
-            predictionText.innerText = "Błąd dostępu do kamery!";
-            return;
-        }
+        } catch (error) { predictionText.innerText = "Błąd dostępu do kamery!"; return; }
 
         predictionText.innerText = 'Ładowanie modeli AI...';
         try {
             classifier = knnClassifier.create();
             mobilenetModel = await mobilenet.load();
-            predictionText.innerText = 'Gotowe! Naucz mnie czegoś.';
-        } catch (error) {
-            predictionText.innerText = "Błąd ładowania modeli AI!";
-        }
+            predictionText.innerText = 'Gotowe! Naucz mnie czegoś lub wczytaj model.';
+        } catch (error) { predictionText.innerText = "Błąd ładowania modeli AI!"; }
     }
 
     function addExample(classId) {
@@ -93,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackQuestion.innerText = `Czy to jest ${predictedClass}? (pewność: ${confidence}%)`;
             showFeedbackModal(true);
         } else {
-            predictionText.innerText = 'Najpierw naucz mnie czegoś!';
+            predictionText.innerText = 'Najpierw naucz mnie czegoś lub wczytaj model!';
         }
     }
     
@@ -115,23 +124,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function showFeedbackModal(show) {
-        if (show) {
-            feedbackModal.classList.add('visible');
-            correctionPanel.style.display = 'none';
+        feedbackModal.classList.toggle('visible', show);
+        if(show) correctionPanel.style.display = 'none';
+    }
+
+    // === NOWE FUNKCJE ZAPISU I WCZYTYWANIA ===
+    function saveModel() {
+        if (classifier.getNumClasses() > 0) {
+            // Konwertuj dane modelu na format, który można zapisać w Firebase
+            const dataset = classifier.getClassifierDataset();
+            const datasetObj = {};
+            Object.keys(dataset).forEach((key) => {
+                const data = dataset[key].dataSync();
+                // Konwertuj Float32Array na zwykłą tablicę
+                datasetObj[key] = Array.from(data);
+            });
+            const jsonStr = JSON.stringify(datasetObj);
+            
+            // Zapisz w Firebase Realtime Database
+            database.ref('models/knn-model').set(jsonStr);
+            predictionText.innerText = 'Model został zapisany w chmurze!';
         } else {
-            feedbackModal.classList.remove('visible');
+            predictionText.innerText = 'Nie można zapisać pustego modelu!';
+        }
+    }
+
+    async function loadModel() {
+        predictionText.innerText = 'Wczytywanie modelu z chmury...';
+        const snapshot = await database.ref('models/knn-model').get();
+        const jsonStr = snapshot.val();
+
+        if (jsonStr) {
+            const dataset = JSON.parse(jsonStr);
+            const tensorObj = {};
+            let totalExamples = 0;
+            
+            // Konwertuj dane z powrotem na Tensory
+            Object.keys(dataset).forEach((key) => {
+                const tensor = tf.tensor(dataset[key]);
+                tensorObj[key] = tensor;
+                totalExamples += tensor.shape[0];
+            });
+
+            classifier.setClassifierDataset(tensorObj);
+            exampleCount = totalExamples;
+            updateStats();
+            predictionText.innerText = `Model wczytany! (zawiera ${exampleCount} przykładów)`;
+        } else {
+            predictionText.innerText = 'W chmurze nie znaleziono zapisanego modelu.';
         }
     }
 
     // === NASŁUCHIWANIE NA ZDARZENIA ===
     startBtn.addEventListener('click', startGame);
     stopBtn.addEventListener('click', stopGame);
+    guessBtn.addEventListener('click', guess);
+    saveModelBtn.addEventListener('click', saveModel);
+    loadModelBtn.addEventListener('click', loadModel);
     
     addExampleButtons.forEach(button => {
         button.addEventListener('click', () => addExample(button.dataset.classId));
     });
-    
-    guessBtn.addEventListener('click', guess);
     
     btnYes.addEventListener('click', () => handleFeedback(true));
     btnNo.addEventListener('click', () => handleFeedback(false));
