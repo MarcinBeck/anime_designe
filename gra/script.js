@@ -1,17 +1,16 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // POPRAWKA: Przywracamy wymuszenie użycia CPU, aby uniknąć błędów WebGL.
     await tf.setBackend('cpu');
     console.log('TensorFlow.js backend ustawiony na CPU.');
 
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        databaseURL: "YOUR_DATABASE_URL",
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -25,11 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
     
+    // POPRAWKA: Dodana optymalizacja 'willReadFrequently'
     const canvas = document.getElementById('canvas'); 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const overlayCanvas = document.getElementById('overlay-canvas');
-    const overlayCtx = overlayCanvas.getContext('2d');
+    const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
 
+    // Pozostałe elementy DOM
     let lastPrediction, lastFeatures;
     let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
@@ -43,6 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
+    // === GŁÓWNE FUNKCJE APLIKACJI ===
+    
     async function initCameraAndAI() {
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
@@ -94,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
             currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
             overlayCtx.strokeStyle = 'blue';
+            overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
         }
         window.requestAnimationFrame(predict);
