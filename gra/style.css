@@ -4,7 +4,7 @@
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
-    --color-success: #2e7d32;
+    --color-stop-red: #d32f2f;
 }
 
 /* === Style globalne === */
@@ -14,7 +14,7 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-size: 1.6rem;
     line-height: 1.7;
-    color: var(--color-text);
+    color: #333;
     background-color: #f5f5f5;
 }
 #game-container {
@@ -67,6 +67,8 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     transition: opacity 0.5s ease, visibility 0.5s;
     visibility: visible;
     opacity: 1;
+    z-index: 15;
+    position: relative;
 }
 #game-container.game-active #start-screen {
     opacity: 0;
@@ -93,6 +95,26 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     opacity: 1;
 }
 
+/* Przycisk STOP */
+#stop-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 15;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    font-size: 2.4rem;
+    line-height: 1;
+    border-radius: 50%;
+    display: none; /* Ukryty domyślnie */
+}
+#game-container.game-active #stop-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Panel z kontrolkami */
 .controls-panel {
     position: absolute;
@@ -107,20 +129,25 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
     gap: 1.5rem;
     transform: translateY(100%);
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    visibility: hidden;
+    opacity: 0;
 }
 #game-container.game-active .controls-panel {
     transform: translateY(0);
+    visibility: visible;
+    opacity: 1;
 }
 .controls-container {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
     gap: 3rem;
+    width: 100%;
 }
-.learning-module, .prediction-module { text-align: center; }
-.learning-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; }
+.learning-module, .prediction-module, .stats-module { text-align: center; }
+.learning-module p, .prediction-module p, .stats-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; text-transform: uppercase; }
 .buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .prediction-output {
     color: var(--color-light);
@@ -130,6 +157,12 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
     margin-top: 1rem;
 }
+.stats-info {
+    color: var(--color-light);
+    font-size: 3rem;
+    font-weight: 700;
+}
+
 
 /* Modal z feedbackiem */
 .feedback-modal {
@@ -160,23 +193,25 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .modal-content p { font-size: 2rem; margin-bottom: 2rem; }
 .correction-panel { display: none; margin-top: 2rem; }
 
-/* Style przycisków */
+/* === UJEDNOLICONE Style przycisków === */
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 1rem 2.8rem;
     border-radius: 8px;
-    border: 2px solid var(--color-light);
+    border: 2px solid transparent;
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
-    background-color: transparent;
-    color: var(--color-light);
     transition: all 0.2s ease;
 }
-.btn:hover { background-color: var(--color-light); color: var(--color-dark); }
-.btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
-.btn-large:hover { background-color: var(--color-primary); color: var(--color-light); }
-.btn-primary { background-color: var(--color-success); border-color: var(--color-success); }
-.btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
+.btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; }
+.controls-panel .btn { border-color: var(--color-light); color: var(--color-light); }
+.controls-panel .btn:hover { background-color: var(--color-light); color: var(--color-dark); }
+.btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); color: var(--color-light); }
+.btn-primary:hover { background-color: #a31545; border-color: #a31545; }
+.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); color: var(--color-light); }
+.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
 .modal-content .btn { color: var(--color-text); border-color: #ccc; }
 .modal-content .btn:hover { background-color: #eee; }
