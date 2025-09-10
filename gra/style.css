@@ -31,6 +31,8 @@ body {
     flex-grow: 1;
     position: relative;
     overflow: hidden;
+    /* Ważne: tło kontenera musi być przezroczyste, aby wideo było widać */
+    background-color: transparent; 
 }
 #camera-feed {
     position: absolute;
@@ -40,7 +42,7 @@ body {
     min-height: 100%;
     width: auto;
     height: auto;
-    z-index: 0;
+    z-index: -1; /* POPRAWKA: Ustawia wideo pod treścią, ale nad tłem strony */
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
 .controls-panel {
