@@ -23,16 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
-    
-    // Canvasy z optymalizacją wydajności
-    const canvas = document.getElementById('canvas'); 
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const overlayCanvas = document.getElementById('overlay-canvas');
-    const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
-
-    // Pozostałe elementy DOM
-    let lastPrediction, lastFeatures;
-    let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
@@ -40,8 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnNo = document.getElementById('feedback-no');
     const correctionPanel = document.getElementById('correction-panel');
     const correctionButtons = document.querySelectorAll('.correction-panel .btn');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
 
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
+    let lastPrediction, lastFeatures;
+    let exampleCount = 0;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
@@ -90,12 +86,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (faces.length > 0) {
             const faceBox = faces[0].boundingBox;
             
-            // Przeliczanie współrzędnych X dla lustrzanego odbicia
-            const mirroredFaceX = overlayCanvas.width - faceBox.xMin - faceBox.width;
-
+            // Rysujemy bezpośrednio, bez przeliczania lustrzanego
             overlayCtx.strokeStyle = 'green';
             overlayCtx.lineWidth = 4;
-            overlayCtx.strokeRect(mirroredFaceX, faceBox.yMin, faceBox.width, faceBox.height);
+            overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
             
             const roiY = faceBox.yMin + faceBox.height * 0.8;
             const roiHeight = faceBox.height * 1.5;
@@ -103,11 +97,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
             currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
             
-            const mirroredRoiX = overlayCanvas.width - currentROI.x - currentROI.width;
-            
             overlayCtx.strokeStyle = 'blue';
             overlayCtx.lineWidth = 4;
-            overlayCtx.strokeRect(mirroredRoiX, currentROI.y, currentROI.width, currentROI.height);
+            overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
         }
 
         window.requestAnimationFrame(predict);
@@ -225,4 +217,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnNo.addEventListener('click', () => handleFeedback(false));
     correctionButtons.forEach(button => button.addEventListener('click', () => handleCorrection(button.dataset.classId)));
 });
-
