@@ -37,16 +37,37 @@
         <canvas id="canvas" style="display: none;"></canvas>
 
         <div id="controls-panel" class="controls-panel">
-            <div class="prediction-output-wrapper">
-                <div id="prediction" class="prediction-output">Uruchamianie...</div>
+            <div class="controls-container">
+                <div class="learning-module">
+                    <p>DODAJ PRZYKŁAD:</p>
+                    <div class="buttons-group">
+                        <button class="btn" data-class-id="0">KWADRAT</button>
+                        <button class="btn" data-class-id="1">KOŁO</button>
+                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
+                    </div>
+                </div>
+                <div class="prediction-module">
+                     <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+                </div>
             </div>
-            <div class="buttons-group">
-                <button id="add-example-0" class="btn">Dodaj przykład "Gest 1"</button>
-                <button id="add-example-1" class="btn">Dodaj przykład "Gest 2"</button>
-                <button id="add-example-2" class="btn">Dodaj przykład "Gest 3"</button>
-            </div>
-            <div class="stop-button-wrapper">
-                <button id="stop-btn" class="btn btn-stop">STOP</button>
+            <div id="prediction" class="prediction-output">...</div>
+        </div>
+
+        <div id="feedback-modal" class="feedback-modal">
+            <div class="modal-content">
+                <p id="feedback-question">Czy to jest poprawna odpowiedź?</p>
+                <div class="buttons-group">
+                    <button id="feedback-yes" class="btn">Tak</button>
+                    <button id="feedback-no" class="btn">Nie</button>
+                </div>
+                <div id="correction-panel" class="correction-panel">
+                    <p>W takim razie, co to było?</p>
+                     <div class="buttons-group">
+                        <button class="btn" data-class-id="0">KWADRAT</button>
+                        <button class="btn" data-class-id="1">KOŁO</button>
+                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -59,7 +80,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
-    
     <script src="script.js" defer></script>
 </body>
 </html>
