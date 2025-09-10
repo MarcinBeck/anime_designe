@@ -1,16 +1,19 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Ta funkcja jest gwarancją, że cały poniższy kod uruchomi się
+    // dopiero po załadowaniu wszystkich elementów HTML na stronie.
+
     await tf.setBackend('cpu');
     console.log('TensorFlow.js backend ustawiony na CPU.');
 
-    // === PRZYWRÓCONA KONFIGURACJA FIREBASE (wstaw swoje dane!) ===
+    // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        databaseURL: "YOUR_DATABASE_URL",
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -23,6 +26,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
+    
+    // Canvasy
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const overlayCtx = overlayCanvas.getContext('2d');
+
+    // Pozostałe elementy DOM
+    let lastPrediction, lastFeatures;
+    let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
@@ -30,17 +43,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnNo = document.getElementById('feedback-no');
     const correctionPanel = document.getElementById('correction-panel');
     const correctionButtons = document.querySelectorAll('.correction-panel .btn');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const overlayCanvas = document.getElementById('overlay-canvas');
-    const overlayCtx = overlayCanvas.getContext('2d');
 
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
-    let lastPrediction, lastFeatures;
-    let exampleCount = 0;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
+    
     async function initCameraAndAI() {
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
@@ -65,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mobilenet.load(),
                 faceLandmarksDetection.load(faceLandmarksDetection.SupportedPackages.mediaPipeFaceMesh)
             ]);
-            // PRZYWRÓCONE WYWOŁANIE: Automatyczne wczytywanie modelu
             await loadModel();
         } catch (error) { 
             console.error(error);
@@ -112,7 +119,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             exampleCount++;
             updateStats();
             predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-            // PRZYWRÓCONE WYWOŁANIE: Automatyczny zapis
             saveModel();
         } else {
             predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
@@ -138,7 +144,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // === PRZYWRÓCONE FUNKCJE ZAPISU I WCZYTYWANIA Z FIREBASE ===
     function saveModel() {
         if (classifier.getNumClasses() > 0) {
             const dataset = classifier.getClassifierDataset();
@@ -157,7 +162,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         predictionText.innerText = 'Wczytywanie modelu z chmury...';
         const snapshot = await database.ref('models/knn-model').get();
         const jsonStr = snapshot.val();
-
         if (jsonStr) {
             const dataset = JSON.parse(jsonStr);
             const tensorObj = Object.fromEntries(
@@ -175,7 +179,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // === Pozostałe funkcje (start/stop, feedback, etc.) ===
     function startGame() { gameContainer.classList.add('game-active'); initCameraAndAI(); }
     function stopGame() {
         if (videoStream) videoStream.getTracks().forEach(track => track.stop());
@@ -198,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         exampleCount++; updateStats();
         predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
         showFeedbackModal(false);
-        saveModel(); // PRZYWRÓCONE WYWOŁANIE: Zapis po korekcie
+        saveModel();
     }
     function showFeedbackModal(show) {
         if(feedbackModal) feedbackModal.classList.toggle('visible', show);
