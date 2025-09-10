@@ -4,8 +4,7 @@
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
-    --color-text: #333;
-    --color-stop-red: #d32f2f;
+    --color-success: #2e7d32;
 }
 
 /* === Style globalne === */
@@ -65,22 +64,13 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease, visibility 0.5s;
+    visibility: visible;
+    opacity: 1;
 }
-
-/* Kamera i kontrolki - domyślnie ukryte */
-#camera-feed, .controls-panel {
-    display: none;
-}
-
-/* Stan aktywny gry - włączany przez JS */
 #game-container.game-active #start-screen {
     opacity: 0;
-    pointer-events: none;
-}
-#game-container.game-active #camera-feed,
-#game-container.game-active .controls-panel {
-    display: flex; /* lub block, w zależności od elementu */
+    visibility: hidden;
 }
 
 /* Wideo jako tło */
@@ -94,6 +84,13 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     height: auto;
     z-index: 0;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+#game-container.game-active #camera-feed {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Panel z kontrolkami */
@@ -104,24 +101,64 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     width: 100%;
     background: rgba(0, 0, 0, 0.7);
     padding: 2rem;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
     z-index: 10;
-    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    transform: translateY(100%);
+    transition: transform 0.5s ease;
 }
-.prediction-output-wrapper { flex-basis: 100%; text-align: center; order: 1; }
-.buttons-group { flex-grow: 1; display: flex; gap: 1.5rem; justify-content: center; order: 2; }
-.stop-button-wrapper { order: 3; }
-
+#game-container.game-active .controls-panel {
+    transform: translateY(0);
+}
+.controls-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3rem;
+}
+.learning-module, .prediction-module { text-align: center; }
+.learning-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; }
+.buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .prediction-output {
     color: var(--color-light);
-    font-size: 2.4rem;
+    font-size: 2rem;
     font-weight: 700;
-    min-height: 3rem;
+    min-height: 2.8rem;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    margin-top: 1rem;
 }
+
+/* Modal z feedbackiem */
+.feedback-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+.feedback-modal.visible {
+    opacity: 1;
+    visibility: visible;
+}
+.modal-content {
+    background: var(--color-light);
+    padding: 3rem 4rem;
+    border-radius: 12px;
+}
+.modal-content p { font-size: 2rem; margin-bottom: 2rem; }
+.correction-panel { display: none; margin-top: 2rem; }
 
 /* Style przycisków */
 .btn {
@@ -139,7 +176,7 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .btn:hover { background-color: var(--color-light); color: var(--color-dark); }
 .btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
 .btn-large:hover { background-color: var(--color-primary); color: var(--color-light); }
-.btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); }
-.btn-primary:hover { background-color: #a31545; border-color: #a31545; }
-.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); }
-.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
+.btn-primary { background-color: var(--color-success); border-color: var(--color-success); }
+.btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
+.modal-content .btn { color: var(--color-text); border-color: #ccc; }
+.modal-content .btn:hover { background-color: #eee; }
