@@ -28,18 +28,20 @@
     </header>
 
     <main class="game-main-content">
-        <video id="camera-feed" autoplay playsinline></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-
-        <div class="controls-panel">
-            <div id="prediction" class="prediction-output">Uruchamianie...</div>
-            <div class="buttons-group">
-                <button id="add-example-0" class="btn">Dodaj KWADRAT</button>
-                <button id="add-example-1" class="btn">Dodaj KOŁO</button>
-                <button id="add-example-2" class="btn">Dodaj TRÓJKĄT</button>
-                <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+        <div class="game-layout">
+            <video id="camera-feed" autoplay playsinline></video>
+            <div id="controls-panel" class="controls-panel">
+                <div id="prediction" class="prediction-output">Uruchamianie...</div>
+                <div class="buttons-group">
+                    <button id="add-example-0" class="btn">Dodaj KWADRAT</button>
+                    <button id="add-example-1" class="btn">Dodaj KOŁO</button>
+                    <button id="add-example-2" class="btn">Dodaj TRÓJKĄT</button>
+                    <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+                </div>
             </div>
         </div>
+        
+        <canvas id="canvas" style="display: none;"></canvas>
     </main>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -47,7 +49,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
