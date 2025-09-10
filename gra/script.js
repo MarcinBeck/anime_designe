@@ -2,12 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // === Elementy DOM ===
     const gameContainer = document.getElementById('game-container');
     const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
     const video = document.getElementById('camera-feed');
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
+    const exampleCounterSpan = document.getElementById('example-counter');
     
-    // Elementy modala
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
     const btnYes = document.getElementById('feedback-yes');
@@ -17,10 +18,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let classifier, mobilenetModel, videoStream;
     let lastPrediction, lastFeatures;
+    let exampleCount = 0;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-    // === GŁÓWNE FUNKCJE ===
-    async function init() {
+    // === GŁÓWNE FUNKCJE APLIKACJI ===
+    function startGame() {
+        gameContainer.classList.add('game-active');
+        initCameraAndAI();
+    }
+
+    function stopGame() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+        video.srcObject = null;
+        gameContainer.classList.remove('game-active');
+        resetGame();
+    }
+    
+    function resetGame() {
+        if(classifier) classifier.clearAllClasses();
+        exampleCount = 0;
+        updateStats();
+        predictionText.innerText = '...';
+    }
+    
+    function updateStats() {
+        exampleCounterSpan.innerText = exampleCount;
+    }
+
+    async function initCameraAndAI() {
         await tf.setBackend('cpu');
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
@@ -47,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!mobilenetModel) return;
         const features = mobilenetModel.infer(video, true);
         classifier.addExample(features, classId);
+        exampleCount++;
+        updateStats();
         predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
     }
 
@@ -55,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const features = mobilenetModel.infer(video, true);
             const result = await classifier.predictClass(features);
             
-            lastPrediction = result; // Zapisz ostatnie przewidywanie
-            lastFeatures = features; // Zapisz cechy obrazu dla ewentualnej korekty
+            lastPrediction = result;
+            lastFeatures = features;
 
             const confidence = Math.round(result.confidences[result.label] * 100);
             const predictedClass = CLASS_NAMES[result.label];
@@ -78,8 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleCorrection(correctClassId) {
-        // Dodaj zapamiętany obraz do poprawnej klasy (douczanie)
         classifier.addExample(lastFeatures, correctClassId);
+        exampleCount++;
+        updateStats();
         predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
         showFeedbackModal(false);
     }
@@ -87,18 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function showFeedbackModal(show) {
         if (show) {
             feedbackModal.classList.add('visible');
-            correctionPanel.style.display = 'none'; // Zawsze resetuj panel korekty
+            correctionPanel.style.display = 'none';
         } else {
             feedbackModal.classList.remove('visible');
         }
     }
 
     // === NASŁUCHIWANIE NA ZDARZENIA ===
-    startBtn.addEventListener('click', () => {
-        gameContainer.classList.add('game-active');
-        init();
-    });
-
+    startBtn.addEventListener('click', startGame);
+    stopBtn.addEventListener('click', stopGame);
+    
     addExampleButtons.forEach(button => {
         button.addEventListener('click', () => addExample(button.dataset.classId));
     });
