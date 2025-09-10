@@ -1,6 +1,3 @@
-/* Poprzednie style bez zmian... */
-/* (wklej cały plik, aby mieć pewność) */
-
 :root {
     --color-primary: #c2185b;
     --color-magenta: #c2185b; 
@@ -76,8 +73,8 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     visibility: hidden;
 }
 
-/* POPRAWKA: Rozdzielenie stylów dla wideo i canvasa */
-#camera-feed, #overlay-canvas {
+/* POPRAWKA: Wrapper dla wideo i canvas do rysowania */
+.video-wrapper, #overlay-canvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -85,19 +82,23 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     min-height: 100%;
     width: auto;
     height: auto;
+    transform: translateX(-50%) translateY(-50%);
 }
-#camera-feed {
+.video-wrapper {
     z-index: 0;
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.5s ease, visibility 0.5s;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Tylko wideo ma efekt lustra */
+    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Efekt lustra tylko na wrapperze */
+}
+#camera-feed {
+    width: 100%; /* Wideo wypełnia wrapper */
+    height: 100%;
 }
 #overlay-canvas {
-    z-index: 5;
-    transform: translateX(-50%) translateY(-50%); /* Canvas nie jest już odwrócony */
+    z-index: 5; /* Canvas do rysowania jest nad wideo */
 }
-#game-container.game-active #camera-feed {
+#game-container.game-active .video-wrapper {
     visibility: visible;
     opacity: 1;
 }
