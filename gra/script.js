@@ -2,6 +2,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     await tf.setBackend('cpu');
     console.log('TensorFlow.js backend ustawiony na CPU.');
 
+    // === PRZYWRÓCONA KONFIGURACJA FIREBASE (wstaw swoje dane!) ===
+    const firebaseConfig = {
+        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+        authDomain: "guess-game-35a3b.firebaseapp.com",
+        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "guess-game-35a3b",
+        storageBucket: "guess-game-35a3b.appspot.com",
+        messagingSenderId: "1083984624029",
+        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     // === Elementy DOM ===
     const gameContainer = document.getElementById('game-container');
     const startBtn = document.getElementById('start-btn');
@@ -10,20 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
-    
-    // Canvasy
-    const canvas = document.getElementById('canvas'); // Ukryty, do przetwarzania
-    const ctx = canvas.getContext('2d');
-    const overlayCanvas = document.getElementById('overlay-canvas'); // Widoczny, do rysowania
-    const overlayCtx = overlayCanvas.getContext('2d');
-
-    let classifier, mobilenetModel, faceModel, videoStream;
-    let currentROI; // Zmienna przechowująca aktualny obszar zainteresowania (ręka)
-
-    const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
-    // Pozostałe zmienne i elementy DOM bez zmian...
-    let lastPrediction, lastFeatures;
-    let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
@@ -31,10 +30,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnNo = document.getElementById('feedback-no');
     const correctionPanel = document.getElementById('correction-panel');
     const correctionButtons = document.querySelectorAll('.correction-panel .btn');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const overlayCtx = overlayCanvas.getContext('2d');
+
+    let classifier, mobilenetModel, faceModel, videoStream, currentROI;
+    let lastPrediction, lastFeatures;
+    let exampleCount = 0;
+    const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
-    
-    // Inicjalizacja kamery i modeli AI
     async function initCameraAndAI() {
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
@@ -59,7 +65,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mobilenet.load(),
                 faceLandmarksDetection.load(faceLandmarksDetection.SupportedPackages.mediaPipeFaceMesh)
             ]);
-            predictionText.innerText = 'Gotowe! Pokaż twarz i gest.';
+            // PRZYWRÓCONE WYWOŁANIE: Automatyczne wczytywanie modelu
+            await loadModel();
         } catch (error) { 
             console.error(error);
             predictionText.innerText = "Błąd ładowania modeli AI!";
@@ -68,45 +75,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         predict();
     }
     
-    // Główna pętla, która wykrywa twarz, rysuje ramki i przewiduje gesty
     async function predict() {
         if (!videoStream) return;
-
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-        
         const faces = await faceModel.estimateFaces({input: video});
-        currentROI = null; // Resetuj ROI w każdej klatce
+        currentROI = null;
 
         if (faces.length > 0) {
-            const face = faces[0];
-            const faceBox = face.boundingBox;
-
-            // Rysuj zieloną ramkę wokół twarzy
+            const faceBox = faces[0].boundingBox;
             overlayCtx.strokeStyle = 'green';
             overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
             
-            // Definiuj i rysuj niebieską ramkę dla gestu (obszar pod twarzą)
             const roiY = faceBox.yMin + faceBox.height * 0.8;
             const roiHeight = faceBox.height * 1.5;
             const roiWidth = faceBox.width * 1.5;
             const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
-
             currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
             overlayCtx.strokeStyle = 'blue';
-            overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
         }
-
         window.requestAnimationFrame(predict);
     }
     
-    // Funkcja pobierająca cechy obrazu tylko z obszaru zainteresowania (ROI)
     function getFeaturesFromROI() {
         if (!currentROI || !mobilenetModel) return null;
-        // Wytnij ROI z wideo i wklej na ukryty canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(video, currentROI.x, currentROI.y, currentROI.width, currentROI.height, 0, 0, 224, 224);
-        // Przetwórz obraz z canvasu
         return mobilenetModel.infer(canvas, true);
     }
 
@@ -117,11 +112,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             exampleCount++;
             updateStats();
             predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
+            // PRZYWRÓCONE WYWOŁANIE: Automatyczny zapis
+            saveModel();
         } else {
             predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
         }
     }
-
+    
     async function guess() {
         if (classifier.getNumClasses() > 0) {
             const features = getFeaturesFromROI();
@@ -141,47 +138,71 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // === Pozostałe funkcje (start/stop, feedback, statystyki) ===
-    function startGame() { /* ... bez zmian */
-        gameContainer.classList.add('game-active');
-        initCameraAndAI();
+    // === PRZYWRÓCONE FUNKCJE ZAPISU I WCZYTYWANIA Z FIREBASE ===
+    function saveModel() {
+        if (classifier.getNumClasses() > 0) {
+            const dataset = classifier.getClassifierDataset();
+            const datasetObj = {};
+            Object.keys(dataset).forEach((key) => {
+                const data = dataset[key].dataSync();
+                datasetObj[key] = Array.from(data);
+            });
+            const jsonStr = JSON.stringify(datasetObj);
+            database.ref('models/knn-model').set(jsonStr);
+            console.log('Model zapisany w chmurze.');
+        }
     }
-    function stopGame() { /* ... bez zmian */
+
+    async function loadModel() {
+        predictionText.innerText = 'Wczytywanie modelu z chmury...';
+        const snapshot = await database.ref('models/knn-model').get();
+        const jsonStr = snapshot.val();
+
+        if (jsonStr) {
+            const dataset = JSON.parse(jsonStr);
+            const tensorObj = Object.fromEntries(
+                Object.entries(dataset).map(([label, data]) => {
+                    const features = data.length / 1024;
+                    return [label, tf.tensor2d(data, [features, 1024])];
+                })
+            );
+            classifier.setClassifierDataset(tensorObj);
+            exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
+            updateStats();
+            predictionText.innerText = `Model wczytany! (${exampleCount} przykładów). Ucz dalej lub zgaduj.`;
+        } else {
+            predictionText.innerText = 'Nie znaleziono zapisanego modelu. Naucz mnie czegoś!';
+        }
+    }
+    
+    // === Pozostałe funkcje (start/stop, feedback, etc.) ===
+    function startGame() { gameContainer.classList.add('game-active'); initCameraAndAI(); }
+    function stopGame() {
         if (videoStream) videoStream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-        videoStream = null;
+        video.srcObject = null; videoStream = null;
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         gameContainer.classList.remove('game-active');
         resetGame();
     }
-    function resetGame() { /* ... bez zmian */
-        if(classifier) classifier.clearAllClasses();
-        exampleCount = 0;
-        updateStats();
-        predictionText.innerText = '...';
-    }
-    function updateStats() { /* ... bez zmian */
-        exampleCounterSpan.innerText = exampleCount;
-    }
-    function handleFeedback(isCorrect) { /* ... bez zmian */
+    function resetGame() { if(classifier) classifier.clearAllClasses(); exampleCount = 0; updateStats(); predictionText.innerText = '...'; }
+    function updateStats() { if(exampleCounterSpan) exampleCounterSpan.innerText = exampleCount; }
+    function handleFeedback(isCorrect) {
         if (isCorrect) {
             predictionText.innerText = 'Super! Uczę się dalej.';
             showFeedbackModal(false);
-        } else {
-            correctionPanel.style.display = 'block';
-        }
+        } else { correctionPanel.style.display = 'block'; }
     }
-    function handleCorrection(correctClassId) { /* ... bez zmian */
+    function handleCorrection(correctClassId) {
         const features = getFeaturesFromROI();
         if(features) classifier.addExample(features, correctClassId);
-        exampleCount++;
-        updateStats();
+        exampleCount++; updateStats();
         predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
         showFeedbackModal(false);
+        saveModel(); // PRZYWRÓCONE WYWOŁANIE: Zapis po korekcie
     }
-    function showFeedbackModal(show) { /* ... bez zmian */
-        feedbackModal.classList.toggle('visible', show);
-        if(show) correctionPanel.style.display = 'none';
+    function showFeedbackModal(show) {
+        if(feedbackModal) feedbackModal.classList.toggle('visible', show);
+        if(show && correctionPanel) correctionPanel.style.display = 'none';
     }
 
     // === NASŁUCHIWANIE NA ZDARZENIA ===
