@@ -1,4 +1,6 @@
-/* === Zmienne kolorów === */
+/* Poprzednie style bez zmian... */
+/* (wklej cały plik, aby mieć pewność) */
+
 :root {
     --color-primary: #c2185b;
     --color-magenta: #c2185b; 
@@ -7,10 +9,6 @@
     --color-stop-red: #d32f2f;
     --color-success: #2e7d32;
 }
-
-/* Pozostałe style bez zmian... */
-/* (Wklej cały plik, aby mieć pewność, że wszystko jest aktualne) */
-
 html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
@@ -54,6 +52,7 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: var(--color-dark);
 }
 
 #start-screen {
@@ -68,13 +67,16 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     opacity: 1;
     z-index: 15;
     position: relative;
+    background-color: #f5f5f5;
+    width: 100%;
+    height: 100%;
 }
 #game-container.game-active #start-screen {
     opacity: 0;
     visibility: hidden;
 }
 
-#camera-feed {
+#camera-feed, #overlay-canvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -82,11 +84,16 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     min-height: 100%;
     width: auto;
     height: auto;
-    z-index: 0;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
+}
+#camera-feed {
+    z-index: 0;
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.5s ease, visibility 0.5s;
+}
+#overlay-canvas {
+    z-index: 5;
 }
 #game-container.game-active #camera-feed {
     visibility: visible;
@@ -158,6 +165,7 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     font-size: 3rem;
     font-weight: 700;
 }
+
 
 .feedback-modal {
     position: absolute;
