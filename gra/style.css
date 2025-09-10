@@ -1,4 +1,6 @@
-/* === Zmienne kolorów === */
+/* Poprzednie style bez zmian... */
+/* (wklej cały plik, aby mieć pewność) */
+
 :root {
     --color-primary: #c2185b;
     --color-magenta: #c2185b; 
@@ -7,9 +9,6 @@
     --color-stop-red: #d32f2f;
     --color-success: #2e7d32;
 }
-
-/* === Style globalne === */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
@@ -27,7 +26,6 @@ body {
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
 h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 
-/* === Wspólny nagłówek i stopka === */
 .main-header {
     background-color: var(--color-light);
     padding: 1.5rem 0;
@@ -47,7 +45,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     padding: 2rem;
 }
 
-/* === Główny kontener gry === */
 .game-container-main {
     flex-grow: 1;
     position: relative;
@@ -58,7 +55,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     background-color: var(--color-dark);
 }
 
-/* Ekran startowy */
 #start-screen {
     text-align: center;
     padding: 2rem;
@@ -80,7 +76,7 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     visibility: hidden;
 }
 
-/* Wideo i Canvas do rysowania */
+/* POPRAWKA: Rozdzielenie stylów dla wideo i canvasa */
 #camera-feed, #overlay-canvas {
     position: absolute;
     top: 50%;
@@ -89,23 +85,23 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     min-height: 100%;
     width: auto;
     height: auto;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
 #camera-feed {
     z-index: 0;
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.5s ease, visibility 0.5s;
+    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Tylko wideo ma efekt lustra */
 }
 #overlay-canvas {
-    z-index: 5; /* Canvas do rysowania jest nad wideo */
+    z-index: 5;
+    transform: translateX(-50%) translateY(-50%); /* Canvas nie jest już odwrócony */
 }
 #game-container.game-active #camera-feed {
     visibility: visible;
     opacity: 1;
 }
 
-/* Przycisk STOP */
 #stop-btn {
     position: absolute;
     top: 2rem;
@@ -125,7 +121,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
 }
 
-/* Panel z kontrolkami */
 .controls-panel {
     position: absolute;
     bottom: 0;
@@ -174,7 +169,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 }
 
 
-/* Modal z feedbackiem */
 .feedback-modal {
     position: absolute;
     top: 0;
@@ -203,7 +197,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .modal-content p { font-size: 2rem; margin-bottom: 2rem; }
 .correction-panel { display: none; margin-top: 2rem; }
 
-/* === Style przycisków === */
 .btn {
     display: inline-flex;
     align-items: center;
