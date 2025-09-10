@@ -1,4 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // POPRAWKA: Wymuszenie użycia CPU, aby uniknąć błędów WebGL na niewspieranym sprzęcie.
+    // Ta linijka musi być na samym początku.
+    await tf.setBackend('cpu');
+    console.log('TensorFlow.js backend ustawiony na CPU.');
+
     // === Elementy DOM ===
     const gameContainer = document.getElementById('game-container');
     const startBtn = document.getElementById('start-btn');
@@ -10,41 +15,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let classifier;
     let mobilenetModel;
     let isPredicting = false;
-    let videoStream; // Zmienna do przechowywania strumienia z kamery
+    let videoStream;
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
 
-    // Funkcja uruchamiająca grę
     function startGame() {
         console.log('Rozpoczynanie gry...');
         gameContainer.classList.add('game-active');
         initCameraAndAI();
     }
 
-    // Funkcja zatrzymująca grę
     function stopGame() {
         console.log('Zatrzymywanie gry...');
         isPredicting = false;
         
-        // Zatrzymaj strumień z kamery
         if (videoStream) {
             videoStream.getTracks().forEach(track => track.stop());
         }
         video.srcObject = null;
         
-        // Zresetuj stan wizualny
         gameContainer.classList.remove('game-active');
         predictionText.innerText = 'Uruchamianie...';
     }
 
-    // Inicjalizacja kamery i modeli AI
     async function initCameraAndAI() {
         console.log('Inicjalizacja kamery i AI...');
         predictionText.innerText = 'Uruchamianie kamery...';
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoStream = stream; // Zapisz strumień
+            videoStream = stream;
             video.srcObject = stream;
             await video.play();
         } catch (error) {
@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         predict();
     }
 
-    // Dodawanie przykładów do nauki
     function addExample(classId) {
         if (!mobilenetModel) return;
         const features = mobilenetModel.infer(video, true);
@@ -80,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         predictionText.innerText = `Dodano przykład dla gestu ${friendlyClassName}!`;
     }
 
-    // Pętla przewidywania
     async function predict() {
         if (isPredicting) {
             if (classifier.getNumClasses() > 0) {
@@ -102,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addExampleButtons.forEach(button => {
         button.addEventListener('click', (e) => {
+            // Poprawiony sposób pobierania ID, aby uniknąć problemów z 'add-example-X'
             const classId = e.currentTarget.id.split('-').pop();
             addExample(classId);
         });
