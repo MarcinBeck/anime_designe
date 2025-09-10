@@ -21,7 +21,7 @@
                     <li><a href="../index.html#gallery">Galeria</a></li>
                     <li><a href="../desktop-3.html">Kontakt</a></li>
                     <li><a href="index.html">Gra</a></li>
-                    <li><a href="statystyki.html">Statystyki</a></li>
+                    <li><a href="../statystyki.html">Statystyki</a></li>
                 </ul>
             </nav>
         </div>
@@ -44,9 +44,9 @@
                 <div class="learning-module">
                     <p>DODAJ PRZYKŁAD:</p>
                     <div class="buttons-group">
-                        <button class="btn btn-secondary" data-class-id="0">KWADRAT</button>
-                        <button class="btn btn-secondary" data-class-id="1">KOŁO</button>
-                        <button class="btn btn-secondary" data-class-id="2">TRÓJKĄT</button>
+                        <button class="btn" data-class-id="0">KWADRAT</button>
+                        <button class="btn" data-class-id="1">KOŁO</button>
+                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
                     </div>
                 </div>
                 <div class="prediction-module">
@@ -57,6 +57,13 @@
                     <p>ZAPISANO DANYCH:</p>
                     <div id="stats-info" class="stats-info">
                         <span id="example-counter">0</span>
+                    </div>
+                </div>
+                <div class="model-actions-module">
+                    <p>ZARZĄDZAJ MODELEM:</p>
+                    <div class="buttons-group">
+                        <button id="save-model-btn" class="btn btn-save">ZAPISZ MODEL</button>
+                        <button id="load-model-btn" class="btn btn-load">WCZYTAJ MODEL</button>
                     </div>
                 </div>
             </div>
@@ -87,6 +94,8 @@
     </footer>
 </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
