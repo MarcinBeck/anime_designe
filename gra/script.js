@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        databaseURL: "YOUR_DATABASE_URL",
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -23,8 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
-    const saveModelBtn = document.getElementById('save-model-btn');
-    const loadModelBtn = document.getElementById('load-model-btn');
     const exampleCounterSpan = document.getElementById('example-counter');
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
@@ -75,7 +73,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             classifier = knnClassifier.create();
             mobilenetModel = await mobilenet.load();
-            predictionText.innerText = 'Gotowe! Naucz mnie czegoś lub wczytaj model.';
+            // ZMIANA: Automatyczne wczytywanie modelu po załadowaniu AI
+            await loadModel(); 
         } catch (error) { predictionText.innerText = "Błąd ładowania modeli AI!"; }
     }
 
@@ -86,6 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         exampleCount++;
         updateStats();
         predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
+        // ZMIANA: Automatyczne zapisywanie modelu po dodaniu przykładu
+        saveModel();
     }
 
     async function guess() {
@@ -121,6 +122,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateStats();
         predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
         showFeedbackModal(false);
+        // ZMIANA: Automatyczne zapisywanie modelu po korekcie
+        saveModel();
     }
     
     function showFeedbackModal(show) {
@@ -128,24 +131,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(show) correctionPanel.style.display = 'none';
     }
 
-    // === NOWE FUNKCJE ZAPISU I WCZYTYWANIA ===
     function saveModel() {
         if (classifier.getNumClasses() > 0) {
-            // Konwertuj dane modelu na format, który można zapisać w Firebase
             const dataset = classifier.getClassifierDataset();
             const datasetObj = {};
             Object.keys(dataset).forEach((key) => {
                 const data = dataset[key].dataSync();
-                // Konwertuj Float32Array na zwykłą tablicę
                 datasetObj[key] = Array.from(data);
             });
             const jsonStr = JSON.stringify(datasetObj);
             
-            // Zapisz w Firebase Realtime Database
             database.ref('models/knn-model').set(jsonStr);
-            predictionText.innerText = 'Model został zapisany w chmurze!';
-        } else {
-            predictionText.innerText = 'Nie można zapisać pustego modelu!';
+            console.log('Model zapisany w chmurze.');
         }
     }
 
@@ -159,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tensorObj = {};
             let totalExamples = 0;
             
-            // Konwertuj dane z powrotem na Tensory
             Object.keys(dataset).forEach((key) => {
                 const tensor = tf.tensor(dataset[key]);
                 tensorObj[key] = tensor;
@@ -169,9 +165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             classifier.setClassifierDataset(tensorObj);
             exampleCount = totalExamples;
             updateStats();
-            predictionText.innerText = `Model wczytany! (zawiera ${exampleCount} przykładów)`;
+            predictionText.innerText = `Model wczytany! (${exampleCount} przykładów). Ucz dalej lub zgaduj.`;
         } else {
-            predictionText.innerText = 'W chmurze nie znaleziono zapisanego modelu.';
+            predictionText.innerText = 'Nie znaleziono zapisanego modelu. Naucz mnie czegoś!';
         }
     }
 
@@ -179,8 +175,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     startBtn.addEventListener('click', startGame);
     stopBtn.addEventListener('click', stopGame);
     guessBtn.addEventListener('click', guess);
-    saveModelBtn.addEventListener('click', saveModel);
-    loadModelBtn.addEventListener('click', loadModel);
     
     addExampleButtons.forEach(button => {
         button.addEventListener('click', () => addExample(button.dataset.classId));
@@ -193,4 +187,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         button.addEventListener('click', () => handleCorrection(button.dataset.classId));
     });
 });
-
