@@ -1,7 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    await tf.setBackend('cpu');
-    console.log('TensorFlow.js backend ustawiony na CPU.');
-
+document.addEventListener('DOMContentLoaded', () => {
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
         apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
@@ -23,6 +20,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const predictionText = document.getElementById('prediction');
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
+    
+    // Canvasy
+    const canvas = document.getElementById('canvas'); 
+    const ctx = canvas.getContext('2d');
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const overlayCtx = overlayCanvas.getContext('2d');
+
+    // Pozostałe elementy DOM
+    let lastPrediction, lastFeatures;
+    let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
     const feedbackModal = document.getElementById('feedback-modal');
     const feedbackQuestion = document.getElementById('feedback-question');
@@ -30,14 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnNo = document.getElementById('feedback-no');
     const correctionPanel = document.getElementById('correction-panel');
     const correctionButtons = document.querySelectorAll('.correction-panel .btn');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const overlayCanvas = document.getElementById('overlay-canvas');
-    const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
 
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
-    let lastPrediction, lastFeatures;
-    let exampleCount = 0;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
@@ -86,7 +87,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (faces.length > 0) {
             const faceBox = faces[0].boundingBox;
             
-            // Rysujemy bezpośrednio, bez przeliczania lustrzanego
             overlayCtx.strokeStyle = 'green';
             overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
