@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
+<div id="game-container">
     <header class="main-header">
         <div class="container">
             <a href="../index.html" class="logo-link">
@@ -27,28 +27,74 @@
         </div>
     </header>
 
-    <main class="game-main-content">
-        <div class="game-layout">
-            <video id="camera-feed" autoplay playsinline></video>
-            <div id="controls-panel" class="controls-panel">
-                <div id="prediction" class="prediction-output">Uruchamianie...</div>
+    <main class="game-container-main">
+        <div id="start-screen">
+            <h1>Gra AI: Naucz maszynę rozpoznawać gesty</h1>
+            <p>Kliknij start, aby uruchomić kamerę i rozpocząć uczenie.</p>
+            <button id="start-btn" class="btn btn-primary btn-large">START</button>
+        </div>
+
+        <video id="camera-feed" autoplay playsinline></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <canvas id="overlay-canvas"></canvas>
+
+        <button id="stop-btn" class="btn btn-stop">✕</button>
+
+        <div id="controls-panel" class="controls-panel">
+            <div class="controls-container">
+                <div class="learning-module">
+                    <p>DODAJ PRZYKŁAD:</p>
+                    <div class="buttons-group">
+                        <button class="btn" data-class-id="0">KWADRAT</button>
+                        <button class="btn" data-class-id="1">KOŁO</button>
+                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
+                    </div>
+                </div>
+                <div class="prediction-module">
+                     <p>ZGADUJ:</p>
+                     <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+                </div>
+                <div class="stats-module">
+                    <p>ZAPISANO DANYCH:</p>
+                    <div id="stats-info" class="stats-info">
+                        <span id="example-counter">0</span>
+                    </div>
+                </div>
+            </div>
+            <div id="prediction" class="prediction-output">...</div>
+        </div>
+
+        <div id="feedback-modal" class="feedback-modal">
+            <div class="modal-content">
+                <p id="feedback-question">Czy to jest poprawna odpowiedź?</p>
                 <div class="buttons-group">
-                    <button id="add-example-0" class="btn">Dodaj KWADRAT</button>
-                    <button id="add-example-1" class="btn">Dodaj KOŁO</button>
-                    <button id="add-example-2" class="btn">Dodaj TRÓJKĄT</button>
-                    <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+                    <button id="feedback-yes" class="btn">Tak</button>
+                    <button id="feedback-no" class="btn">Nie</button>
+                </div>
+                <div id="correction-panel" class="correction-panel">
+                    <p>W takim razie, co to było?</p>
+                     <div class="buttons-group">
+                        <button class="btn" data-class-id="0">KWADRAT</button>
+                        <button class="btn" data-class-id="1">KOŁO</button>
+                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <canvas id="canvas" style="display: none;"></canvas>
     </main>
-    
+
+    <footer class="main-footer">
+        <p>Anime Designe &copy; 2025</p>
+    </footer>
+</div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+    
+    <script src="script.js" defer></script>
 </body>
 </html>
