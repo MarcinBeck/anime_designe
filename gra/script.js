@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const guessBtn = document.getElementById('guess-btn');
     
     // Canvasy
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas'); 
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('overlay-canvas');
     const overlayCtx = overlayCanvas.getContext('2d');
@@ -84,7 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     async function predict() {
         if (!videoStream) return;
+
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        
         const faces = await faceModel.estimateFaces({input: video});
         currentROI = null;
 
@@ -102,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             overlayCtx.strokeStyle = 'blue';
             overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
         }
+
         window.requestAnimationFrame(predict);
     }
     
@@ -159,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadModel() {
-        predictionText.innerText = 'Wczytywanie modelu z chmury...';
+        predictionText.innerText = 'Wczytywanie modelu z chmurzy...';
         const snapshot = await database.ref('models/knn-model').get();
         const jsonStr = snapshot.val();
         if (jsonStr) {
@@ -217,4 +220,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnNo.addEventListener('click', () => handleFeedback(false));
     correctionButtons.forEach(button => button.addEventListener('click', () => handleCorrection(button.dataset.classId)));
 });
-
