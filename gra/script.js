@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID",
-        databaseURL: "YOUR_DATABASE_URL",
+        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+        authDomain: "guess-game-35a3b.firebaseapp.com",
+        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "guess-game-35a3b",
+        storageBucket: "guess-game-35a3b.appspot.com",
+        messagingSenderId: "1083984624029",
+        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -225,3 +225,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnNo.addEventListener('click', () => handleFeedback(false));
     correctionButtons.forEach(button => button.addEventListener('click', () => handleCorrection(button.dataset.classId)));
 });
+
