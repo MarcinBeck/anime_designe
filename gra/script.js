@@ -1,4 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // POPRAWKA: Przywracamy wymuszenie użycia CPU, aby uniknąć błędów WebGL.
+    await tf.setBackend('cpu');
+    console.log('TensorFlow.js backend ustawiony na CPU.');
+
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
         apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
@@ -21,13 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const addExampleButtons = document.querySelectorAll('.learning-module .btn');
     const guessBtn = document.getElementById('guess-btn');
     
-    // Canvasy
     const canvas = document.getElementById('canvas'); 
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('overlay-canvas');
     const overlayCtx = overlayCanvas.getContext('2d');
 
-    // Pozostałe elementy DOM
     let lastPrediction, lastFeatures;
     let exampleCount = 0;
     const exampleCounterSpan = document.getElementById('example-counter');
@@ -41,8 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-    // === GŁÓWNE FUNKCJE APLIKACJI ===
-    
     async function initCameraAndAI() {
         predictionText.innerText = 'Uruchamianie kamery...';
         try {
@@ -78,15 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function predict() {
         if (!videoStream) return;
-
         overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-        
         const faces = await faceModel.estimateFaces({input: video});
         currentROI = null;
 
         if (faces.length > 0) {
             const faceBox = faces[0].boundingBox;
-            
             overlayCtx.strokeStyle = 'green';
             overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
@@ -96,12 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const roiWidth = faceBox.width * 1.5;
             const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
             currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
-            
             overlayCtx.strokeStyle = 'blue';
-            overlayCtx.lineWidth = 4;
             overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
         }
-
         window.requestAnimationFrame(predict);
     }
     
