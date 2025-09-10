@@ -5,12 +5,12 @@
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
     --color-stop-red: #d32f2f;
-    --color-save-green: #2e7d32;
-    --color-load-blue: #1565c0;
+    --color-success: #2e7d32;
 }
 
-/* === Style globalne === */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Pozostałe style bez zmian... */
+/* (Wklej cały plik, aby mieć pewność, że wszystko jest aktualne) */
+
 html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
@@ -28,7 +28,6 @@ body {
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
 h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 
-/* === Wspólny nagłówek i stopka === */
 .main-header {
     background-color: var(--color-light);
     padding: 1.5rem 0;
@@ -48,7 +47,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     padding: 2rem;
 }
 
-/* === Główny kontener gry === */
 .game-container-main {
     flex-grow: 1;
     position: relative;
@@ -58,7 +56,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
 }
 
-/* Ekran startowy */
 #start-screen {
     text-align: center;
     padding: 2rem;
@@ -77,7 +74,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     visibility: hidden;
 }
 
-/* Wideo jako tło */
 #camera-feed {
     position: absolute;
     top: 50%;
@@ -97,7 +93,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     opacity: 1;
 }
 
-/* Przycisk STOP */
 #stop-btn {
     position: absolute;
     top: 2rem;
@@ -117,7 +112,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
 }
 
-/* Panel z kontrolkami */
 .controls-panel {
     position: absolute;
     bottom: 0;
@@ -145,11 +139,11 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     justify-content: center;
     align-items: flex-start;
     flex-wrap: wrap;
-    gap: 2rem;
+    gap: 3rem;
     width: 100%;
 }
-.learning-module, .prediction-module, .stats-module, .model-actions-module { text-align: center; }
-.learning-module p, .prediction-module p, .stats-module p, .model-actions-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; text-transform: uppercase; }
+.learning-module, .prediction-module, .stats-module { text-align: center; }
+.learning-module p, .prediction-module p, .stats-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; text-transform: uppercase; }
 .buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .prediction-output {
     color: var(--color-light);
@@ -165,8 +159,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     font-weight: 700;
 }
 
-
-/* Modal z feedbackiem */
 .feedback-modal {
     position: absolute;
     top: 0;
@@ -195,7 +187,6 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .modal-content p { font-size: 2rem; margin-bottom: 2rem; }
 .correction-panel { display: none; margin-top: 2rem; }
 
-/* === Style przycisków === */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -217,7 +208,5 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
 .btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); }
 .btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
-.btn-save { background-color: var(--color-save-green); border-color: var(--color-save-green); }
-.btn-load { background-color: var(--color-load-blue); border-color: var(--color-load-blue); }
 .modal-content .btn { color: var(--color-text); border-color: #ccc; }
 .modal-content .btn:hover { background-color: #eee; }
