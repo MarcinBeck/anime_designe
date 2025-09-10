@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        databaseURL: "YOUR_DATABASE_URL",
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             classifier = knnClassifier.create();
             mobilenetModel = await mobilenet.load();
-            // ZMIANA: Automatyczne wczytywanie modelu po załadowaniu AI
             await loadModel(); 
         } catch (error) { predictionText.innerText = "Błąd ładowania modeli AI!"; }
     }
@@ -85,7 +84,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         exampleCount++;
         updateStats();
         predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-        // ZMIANA: Automatyczne zapisywanie modelu po dodaniu przykładu
         saveModel();
     }
 
@@ -122,7 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateStats();
         predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
         showFeedbackModal(false);
-        // ZMIANA: Automatyczne zapisywanie modelu po korekcie
         saveModel();
     }
     
@@ -131,6 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(show) correctionPanel.style.display = 'none';
     }
 
+    // === POPRAWIONE FUNKCJE ZAPISU I WCZYTYWANIA (Z ORYGINALNEGO PROJEKTU) ===
     function saveModel() {
         if (classifier.getNumClasses() > 0) {
             const dataset = classifier.getClassifierDataset();
@@ -153,17 +151,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (jsonStr) {
             const dataset = JSON.parse(jsonStr);
-            const tensorObj = {};
-            let totalExamples = 0;
             
-            Object.keys(dataset).forEach((key) => {
-                const tensor = tf.tensor(dataset[key]);
-                tensorObj[key] = tensor;
-                totalExamples += tensor.shape[0];
-            });
+            // Konwertuj obiekt z powrotem na Tensory, zachowując prawidłowy kształt
+            const tensorObj = Object.fromEntries(
+                Object.entries(dataset).map(([label, data]) => {
+                    const features = data.length / 1024; // MobileNet zawsze produkuje 1024 cechy
+                    return [label, tf.tensor2d(data, [features, 1024])];
+                })
+            );
 
             classifier.setClassifierDataset(tensorObj);
-            exampleCount = totalExamples;
+            
+            exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
             updateStats();
             predictionText.innerText = `Model wczytany! (${exampleCount} przykładów). Ucz dalej lub zgaduj.`;
         } else {
@@ -187,4 +186,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         button.addEventListener('click', () => handleCorrection(button.dataset.classId));
     });
 });
-
