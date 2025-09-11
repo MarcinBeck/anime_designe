@@ -27,9 +27,9 @@
         </div>
     </header>
 
-    <main class="game-main-content">
+    <main class="game-container-main">
         <video id="camera-feed" autoplay playsinline></video>
-        <canvas id="overlay-canvas"></canvas> <canvas id="canvas" style="display: none;"></canvas>
+        <canvas id="canvas" style="display: none;"></canvas>
 
         <div id="controls-panel" class="controls-panel">
             <div id="prediction" class="prediction-output">Uruchamianie...</div>
@@ -48,8 +48,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.4.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.0.4/dist/mobilenet.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script>
     
-    <script src="script.js"></script>
+    <script src="face-api.min.js" defer></script>
+    <script src="face.js" defer></script>
+
+    <script src="script.js" defer></script>
 </body>
 </html>
