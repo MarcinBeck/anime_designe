@@ -41,22 +41,27 @@
                 <canvas id="overlay"></canvas>
             </div>
             
-            <div class="controls">
+            <button id="stop-btn" class="btn btn-stop hidden">✕</button>
+
+            <div class="start-game-controls">
                 <button id="camera-toggle-btn">Start kamera</button>
-                <button id="stop-btn" class="btn-stop hidden">✕</button>
             </div>
 
             <div id="symbol-section" class="symbol-section hidden">
-                <div class="status" id="status"></div>
-                <div class="classes">
-                    <button data-class="KOŁO" disabled>Dodaj KOŁO</button>
-                    <button data-class="KWADRAT" disabled>Dodaj KWADRAT</button>
-                    <button data-class="TRÓJKĄT" disabled>Dodaj TRÓJKĄT</button>
-                </div>
-                <button id="predictBtn" class="btn-primary" disabled>Zgadnij symbol</button>
-                <div id="prediction-area">
-                    <div class="prediction" id="prediction"></div>
+                <div class="prediction-area-top">
+                    <div class="status" id="status"></div>
+                    <div id="prediction" class="prediction"></div>
                     <div class="feedback" id="feedback-container"></div>
+                </div>
+                
+                <div class="buttons-control-line">
+                    <button id="predictBtn" class="btn btn-primary" disabled>Zgadnij symbol</button>
+                    <span class="add-label">Dodaj:</span>
+                    <div class="classes">
+                        <button class="btn" data-class="KOŁO" disabled>KOŁO</button>
+                        <button class="btn" data-class="KWADRAT" disabled>KWADRAT</button>
+                        <button class="btn" data-class="TRÓJKĄT" disabled>TRÓJKĄT</button>
+                    </div>
                 </div>
                 <div class="gallery-container">
                     <div class="gallery-header">
