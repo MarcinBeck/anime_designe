@@ -23,12 +23,15 @@ let classifier;
 let mobilenetModel;
 const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-// === Logika z oryginalnego face.js ===
+// === Logika z oryginalnego face.js z POPRAWIONĄ ŚCIEŻKĄ ===
+// Definiujemy poprawną ścieżkę do folderu z modelami
+const MODEL_URL = '/anime_designe/gra/models';
+
 Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri('/anime_designe/gra/models'),
-    faceapi.nets.faceLandmark68Net.loadFromUri('/anime_designe/gra/models'),
-    faceapi.nets.faceRecognitionNet.loadFromUri('/anime_designe/gra/models'),
-    faceapi.nets.faceExpressionNet.loadFromUri('/anime_designe/gra/models')
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
 ]).then(startVideo);
 
 function startVideo() {
@@ -125,5 +128,4 @@ async function loadModel() {
     }
 }
 
-// Uruchomienie części odpowiedzialnej za gesty
 initKNN();
