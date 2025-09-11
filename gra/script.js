@@ -1,9 +1,5 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    await tf.setBackend('cpu');
-    console.log('TensorFlow.js backend ustawiony na CPU.');
-
-    // === Konfiguracja Firebase (wstaw swoje dane!) ===
-    const firebaseConfig = {
+// === Konfiguracja Firebase (wstaw swoje dane!) ===
+const firebaseConfig = {
         apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
         authDomain: "guess-game-35a3b.firebaseapp.com",
         databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
@@ -11,153 +7,107 @@ document.addEventListener('DOMContentLoaded', async () => {
         storageBucket: "guess-game-35a3b.appspot.com",
         messagingSenderId: "1083984624029",
         appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-    // === Elementy DOM ===
-    const gameContainer = document.getElementById('game-container');
-    const startBtn = document.getElementById('start-btn');
-    const video = document.getElementById('camera-feed');
-    const predictionText = document.getElementById('prediction');
-    const addExampleButtons = document.querySelectorAll('.buttons-group .btn[data-class-id]');
-    const guessBtn = document.getElementById('guess-btn');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const overlayCanvas = document.getElementById('overlay-canvas');
-    const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true });
-    
-    let classifier, mobilenetModel, faceModel, videoStream, currentROI;
-    const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
+// === Pobieranie elementów DOM ===
+const video = document.getElementById('camera-feed');
+const canvas = document.getElementById('canvas');
+const predictionText = document.getElementById('prediction');
+const btnAddExample0 = document.getElementById('add-example-0');
+const btnAddExample1 = document.getElementById('add-example-1');
+const btnAddExample2 = document.getElementById('add-example-2');
+const btnGuess = document.getElementById('guess-btn');
 
-    // === GŁÓWNE FUNKCJE APLIKACJI ===
-    
-    async function init() {
-        gameContainer.classList.add('game-active');
-        predictionText.innerText = 'Uruchamianie kamery...';
+let classifier;
+let mobilenetModel;
+const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoStream = stream;
-            video.srcObject = stream;
-            
-            await new Promise(resolve => {
-                video.onloadeddata = () => {
-                    // Ustawiamy wymiary canvasów na podstawie WIDOCZNEGO rozmiaru wideo
-                    overlayCanvas.width = video.clientWidth;
-                    overlayCanvas.height = video.clientHeight;
-                    canvas.width = video.clientWidth;
-                    canvas.height = video.clientHeight;
-                    resolve();
-                };
-            });
-        } catch (error) {
-            predictionText.innerText = "Błąd dostępu do kamery!";
-            console.error(error);
-            return;
-        }
-
-        predictionText.innerText = 'Ładowanie modeli AI...';
-        try {
-            [classifier, mobilenetModel, faceModel] = await Promise.all([
-                knnClassifier.create(),
-                mobilenet.load(),
-                faceLandmarksDetection.load(faceLandmarksDetection.SupportedPackages.mediaPipeFaceMesh)
-            ]);
-            // Nie potrzebujemy już wczytywania modelu z Firebase, więc ta funkcja jest pusta
-            // await loadModel(); 
-            predictionText.innerText = 'Gotowe! Naucz mnie czegoś.';
-        } catch (error) { 
-            predictionText.innerText = "Błąd ładowania modeli AI!";
-            console.error(error);
-            return;
-        }
-        
-        predictLoop();
-    }
-    
-    async function predictLoop() {
-        if (!videoStream) return;
-
-        const scaleX = video.clientWidth / video.videoWidth;
-        const scaleY = video.clientHeight / video.videoHeight;
-
-        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-        const faces = await faceModel.estimateFaces({input: video});
-        currentROI = null;
-
-        if (faces.length > 0) {
-            const faceBoxRaw = faces[0].boundingBox;
-            const faceBox = {
-                xMin: faceBoxRaw.xMin * scaleX,
-                yMin: faceBoxRaw.yMin * scaleY,
-                width: faceBoxRaw.width * scaleX,
-                height: faceBoxRaw.height * scaleY,
-            };
-
-            overlayCtx.strokeStyle = 'green';
-            overlayCtx.lineWidth = 4;
-            overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
-            
-            const roiY = faceBox.yMin + faceBox.height * 0.8;
-            const roiHeight = faceBox.height * 1.5;
-            const roiWidth = faceBox.width * 1.5;
-            const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
-            currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
-            
-            overlayCtx.strokeStyle = 'blue';
-            overlayCtx.lineWidth = 4;
-            overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
-        }
-        requestAnimationFrame(predictLoop);
-    }
-    
-    function getFeaturesFromROI() {
-        if (!currentROI) return null;
-        
-        const scaleX = video.videoWidth / video.clientWidth;
-        const scaleY = video.videoHeight / video.clientHeight;
-        
-        const originalRoi = {
-            x: currentROI.x * scaleX,
-            y: currentROI.y * scaleY,
-            width: currentROI.width * scaleX,
-            height: currentROI.height * scaleY
-        };
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(video, originalRoi.x, originalRoi.y, originalRoi.width, originalRoi.height, 0, 0, 224, 224);
-        return mobilenetModel.infer(canvas, true);
+/**
+ * Główna funkcja inicjująca, uruchamiana automatycznie.
+ */
+async function init() {
+    predictionText.innerText = "Uruchamianie kamery...";
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        await video.play();
+    } catch (error) {
+        predictionText.innerText = "Błąd dostępu do kamery!";
+        return;
     }
 
-    function addExample(classId) {
-        const features = getFeaturesFromROI();
-        if (features) {
-            classifier.addExample(features, classId);
-            predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-        } else {
-            predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
-        }
-    }
-    
-    async function guess() {
-        if (classifier.getNumClasses() > 0) {
-            const features = getFeaturesFromROI();
-            if (features) {
-                const result = await classifier.predictClass(features);
-                const confidence = Math.round(result.confidences[result.label] * 100);
-                predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
-            } else {
-                predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
-            }
-        } else {
-            predictionText.innerText = 'Najpierw naucz mnie czegoś!';
-        }
+    predictionText.innerText = "Ładowanie modeli AI...";
+    try {
+        classifier = knnClassifier.create();
+        mobilenetModel = await mobilenet.load();
+        await loadModel(); // Automatyczne wczytywanie modelu
+    } catch (error) {
+        console.error(error);
+        predictionText.innerText = "Błąd ładowania modeli AI!";
+        return;
     }
 
-    startBtn.addEventListener('click', init);
-    guessBtn.addEventListener('click', guess);
-    addExampleButtons.forEach(button => {
-        button.addEventListener('click', () => addExample(button.dataset.classId));
-    });
-});
+    // Nasłuchiwanie na przyciski
+    btnAddExample0.addEventListener('click', () => addExample(0));
+    btnAddExample1.addEventListener('click', () => addExample(1));
+    btnAddExample2.addEventListener('click', () => addExample(2));
+    btnGuess.addEventListener('click', guess);
+}
+
+function addExample(classId) {
+    if (!mobilenetModel) return;
+    const features = mobilenetModel.infer(video, true);
+    classifier.addExample(features, classId);
+    predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
+    saveModel(); // Automatyczny zapis
+}
+
+async function guess() {
+    if (classifier.getNumClasses() > 0) {
+        const features = mobilenetModel.infer(video, true);
+        const result = await classifier.predictClass(features);
+        const confidence = Math.round(result.confidences[result.label] * 100);
+        predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
+    } else {
+        predictionText.innerText = 'Najpierw naucz mnie czegoś!';
+    }
+}
+
+function saveModel() {
+    if (classifier.getNumClasses() > 0) {
+        const dataset = classifier.getClassifierDataset();
+        const datasetObj = {};
+        Object.keys(dataset).forEach((key) => {
+            const data = dataset[key].dataSync();
+            datasetObj[key] = Array.from(data);
+        });
+        const jsonStr = JSON.stringify(datasetObj);
+        database.ref('models/knn-model').set(jsonStr);
+        console.log('Model zapisany.');
+    }
+}
+
+async function loadModel() {
+    predictionText.innerText = "Wczytywanie modelu...";
+    const snapshot = await database.ref('models/knn-model').get();
+    const jsonStr = snapshot.val();
+    if (jsonStr) {
+        const dataset = JSON.parse(jsonStr);
+        const tensorObj = Object.fromEntries(
+            Object.entries(dataset).map(([label, data]) => {
+                const features = data.length / 1024;
+                return [label, tf.tensor2d(data, [features, 1024])];
+            })
+        );
+        classifier.setClassifierDataset(tensorObj);
+        const exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
+        predictionText.innerText = `Model wczytany (${exampleCount} przykładów).`;
+    } else {
+        predictionText.innerText = "Nie znaleziono modelu. Naucz mnie czegoś!";
+    }
+}
+
+// Uruchomienie aplikacji
+init();
