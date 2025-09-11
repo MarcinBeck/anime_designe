@@ -1,12 +1,12 @@
 // === Konfiguracja Firebase (wstaw swoje dane!) ===
 const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    databaseURL: "YOUR_DATABASE_URL",
 };
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
@@ -23,11 +23,13 @@ let classifier;
 let mobilenetModel;
 const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-// === Logika z oryginalnego face.js z POPRAWIONĄ ŚCIEŻKĄ ===
-// Definiujemy poprawną ścieżkę do folderu z modelami
-const MODEL_URL = '/anime_designe/gra/models';
+// === Logika detekcji twarzy (wierna kopia oryginału) ===
+
+// POPRAWKA: Definiujemy ścieżkę do Twojego folderu `models`
+const MODEL_URL = './models';
 
 Promise.all([
+    // POPRAWKA: Użycie lżejszego modelu `tinyFaceDetector` z oryginalnego projektu
     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
@@ -39,16 +41,17 @@ function startVideo() {
         .then(stream => {
             video.srcObject = stream;
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error("Błąd dostępu do kamery:", err));
 }
 
 video.addEventListener('play', () => {
     const canvas = faceapi.createCanvasFromMedia(video);
     document.querySelector('.game-container-main').append(canvas);
-    const displaySize = { width: video.width, height: video.height };
+    const displaySize = { width: video.clientWidth, height: video.clientHeight };
     faceapi.matchDimensions(canvas, displaySize);
 
     setInterval(async () => {
+        // POPRAWKA: Użycie opcji dla modelu `tiny`
         const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
         const resizedDetections = faceapi.resizeResults(detections, displaySize);
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
@@ -57,18 +60,19 @@ video.addEventListener('play', () => {
 });
 
 
-// === Logika z oryginalnego script.js (do gestów) ===
+// === Logika klasyfikacji gestów (wierna kopia oryginału) ===
 async function initKNN() {
-    predictionText.innerText = "Ładowanie modeli AI...";
+    predictionText.innerText = "Ładowanie modelu gestów...";
     try {
         classifier = knnClassifier.create();
         mobilenetModel = await mobilenet.load();
         await loadModel();
     } catch (error) {
-        console.error(error);
+        console.error("Błąd ładowania modelu gestów:", error);
         predictionText.innerText = "Błąd ładowania modeli AI!";
         return;
     }
+
     btnAddExample0.addEventListener('click', () => addExample(0));
     btnAddExample1.addEventListener('click', () => addExample(1));
     btnAddExample2.addEventListener('click', () => addExample(2));
@@ -104,12 +108,12 @@ function saveModel() {
         });
         const jsonStr = JSON.stringify(datasetObj);
         database.ref('models/knn-model').set(jsonStr);
-        console.log('Model zapisany.');
+        console.log('Model gestów zapisany.');
     }
 }
 
 async function loadModel() {
-    predictionText.innerText = "Wczytywanie modelu...";
+    predictionText.innerText = "Wczytywanie modelu gestów...";
     const snapshot = await database.ref('models/knn-model').get();
     const jsonStr = snapshot.val();
     if (jsonStr) {
@@ -122,10 +126,11 @@ async function loadModel() {
         );
         classifier.setClassifierDataset(tensorObj);
         const exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
-        predictionText.innerText = `Model wczytany (${exampleCount} przykładów).`;
+        predictionText.innerText = `Model gestów wczytany (${exampleCount} przykładów).`;
     } else {
         predictionText.innerText = "Nie znaleziono modelu. Naucz mnie czegoś!";
     }
 }
 
+// Uruchomienie części odpowiedzialnej za gesty
 initKNN();
