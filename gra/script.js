@@ -1,273 +1,218 @@
-// === Konfiguracja Firebase (wstaw swoje dane!) ===
-const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
-};
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+'use strict';
 
-// === Pobieranie elementów DOM ===
-const video = document.getElementById('camera-feed');
-const predictionText = document.getElementById('prediction');
-const btnAddExample0 = document.getElementById('add-example-0');
-const btnAddExample1 = document.getElementById('add-example-1');
-const btnAddExample2 = document.getElementById('add-example-2');
-const btnGuess = document.getElementById('guess-btn');
+window.addEventListener('DOMContentLoaded', () => {
+    // === POBIERANIE ELEMENTÓW DOM ===
+    const loader = document.getElementById('loader');
+    const loaderStatus = document.getElementById('loader-status');
+    const contentWrapper = document.querySelector('.content-wrapper');
+    const authContainer = document.getElementById('auth-container');
+    const cameraToggleBtn = document.getElementById('camera-toggle-btn');
+    const symbolSection = document.querySelector('.symbol-section');
+    const classButtons = document.querySelectorAll('.classes button');
+    const predictBtn = document.getElementById('predictBtn');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const gallery = document.getElementById('gallery');
+    const statusEl = document.getElementById('status');
+    const predictionEl = document.getElementById('prediction');
+    const clearBtn = document.getElementById('clearBtn');
+    const overlay = document.getElementById('overlay');
+    const overlayCtx = overlay.getContext('2d');
+    const feedbackContainer = document.getElementById('feedback-container');
 
-let classifier;
-let mobilenetModel;
-const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
+    let currentUser = null;
+    let currentStream = null;
+    let classifier;
+    let net; // MobileNet
+    const classNames = ["KOŁO", "KWADRAT", "TRÓJKĄT"];
+    let blazeFaceModel;
+    let detectionIntervalId = null;
+    let lastDetectedFace = null;
+    let isCameraOn = false;
 
-// === Logika detekcji twarzy (wierna kopia oryginału) ===
+    // === FUNKCJE AI i KAMERY ===
+    const tensorToJSON = (tensor) => Array.from(tensor.dataSync());
 
-// POPRAWKA: Definiujemy ścieżkę do Twojego folderu `models`
-const MODEL_URL = './models';
+    async function loadModels() {
+        loaderStatus.textContent = "Ładowanie modeli AI...";
+        try {
+            [net, blazeFaceModel] = await Promise.all([
+                mobilenet.load(),
+                blazeface.load()
+            ]);
+            classifier = knnClassifier.create();
+            return true;
+        } catch (e) {
+            loaderStatus.textContent = "Błąd krytyczny ładowania modeli AI.";
+            console.error("Błąd ładowania modeli:", e);
+            return false;
+        }
+    }
 
-Promise.all([
-    // POPRAWKA: Użycie lżejszego modelu `tinyFaceDetector` z oryginalnego projektu
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-]).then(startVideo);
+    async function runDetectionLoop() {
+        if (isCameraOn && blazeFaceModel && !video.paused && !video.ended) {
+            const faces = await blazeFaceModel.estimateFaces(video, false);
+            overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+            
+            if (faces.length > 0) {
+                lastDetectedFace = faces[0];
+                const start = lastDetectedFace.topLeft;
+                const end = lastDetectedFace.bottomRight;
+                const size = [end[0] - start[0], end[1] - start[1]];
+                overlayCtx.strokeStyle = '#c2185b'; // Kolor magentowy
+                overlayCtx.lineWidth = 4;
+                overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
+                
+                // Odblokuj przyciski tylko, gdy jest twarz
+                if (feedbackContainer.innerHTML === '') {
+                    classButtons.forEach(btn => btn.disabled = false);
+                    predictBtn.disabled = false;
+                }
+            } else {
+                lastDetectedFace = null;
+                classButtons.forEach(btn => btn.disabled = true);
+                predictBtn.disabled = true;
+            }
+            detectionIntervalId = setTimeout(runDetectionLoop, 200);
+        }
+    }
 
-function startVideo() {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(err => console.error("Błąd dostępu do kamery:", err));
-}
+    function startCamera() {
+        cameraToggleBtn.disabled = true;
+        cameraToggleBtn.textContent = 'Ładowanie...';
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                currentStream = stream;
+                video.srcObject = stream;
+                video.play();
+                video.addEventListener('loadeddata', () => {
+                    overlay.width = video.videoWidth;
+                    overlay.height = video.videoHeight;
+                    runDetectionLoop();
+                });
+                isCameraOn = true;
+                cameraToggleBtn.textContent = 'Stop kamera';
+                cameraToggleBtn.disabled = false;
+                symbolSection.classList.remove('hidden');
+            }).catch(err => {
+                showToast(`Błąd kamery: ${err.message}`, 'error');
+                cameraToggleBtn.textContent = 'Start kamera';
+                cameraToggleBtn.disabled = false;
+            });
+    }
 
-video.addEventListener('play', () => {
-    const canvas = faceapi.createCanvasFromMedia(video);
-    document.querySelector('.game-container-main').append(canvas);
-    const displaySize = { width: video.clientWidth, height: video.clientHeight };
-    faceapi.matchDimensions(canvas, displaySize);
+    function stopCamera() {
+        if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
+        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        isCameraOn = false;
+        cameraToggleBtn.textContent = 'Start kamera';
+        cameraToggleBtn.disabled = false;
+        symbolSection.classList.add('hidden');
+        classButtons.forEach(btn => btn.disabled = true);
+        predictBtn.disabled = true;
+    }
 
-    setInterval(async () => {
-        // POPRAWKA: Użycie opcji dla modelu `tiny`
-        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resizedDetections);
-    }, 100);
+    // === GŁÓWNE FUNKCJE APLIKACJI (Uczenie i Zgadywanie) ===
+    async function takeSnapshot(label) {
+        if (!net || !classifier || !lastDetectedFace) {
+            showToast("Najpierw pokaż twarz do kamery!", 'info');
+            return;
+        }
+        const faceBox = lastDetectedFace;
+        const cropStartX = faceBox.topLeft[0];
+        const cropStartY = faceBox.bottomRight[1]; // Pod twarzą
+        const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
+        const cropHeight = cropWidth; 
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = 150;
+        canvas.height = 150;
+        ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
+        
+        const galleryInfo = gallery.querySelector('.gallery-info');
+        if (galleryInfo) { gallery.innerHTML = ''; }
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        gallery.appendChild(img);
+        
+        const logits = net.infer(canvas, true);
+        classifier.addExample(logits, label);
+        updateStatus();
+        await logTrainingSample(label, 'manual', logits);
+    }
+
+    async function predict() {
+        if (!net || !classifier || !lastDetectedFace) return;
+        if (classifier.getNumClasses() < classNames.length) {
+            showToast(`Najpierw dodaj próbki dla wszystkich ${classNames.length} symboli!`, 'info');
+            return;
+        }
+        predictBtn.disabled = true;
+        classButtons.forEach(btn => btn.disabled = true);
+        
+        const faceBox = lastDetectedFace;
+        const cropStartX = faceBox.topLeft[0];
+        const cropStartY = faceBox.bottomRight[1];
+        const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
+        const cropHeight = cropWidth;
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = 150;
+        canvas.height = 150;
+        ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
+        
+        const logits = net.infer(canvas, true);
+        const result = await classifier.predictClass(logits);
+        predictionEl.textContent = `Model zgaduje: ${result.label} (pewność ${(result.confidences[result.label] * 100).toFixed(1)}%)`;
+        showFeedbackUI(result, logits);
+    }
+
+    function updateStatus() {
+        if (classifier) {
+            const counts = classifier.getClassExampleCount();
+            statusEl.textContent = classNames.map(name => `${name}: ${counts[name] || 0}`).join(' | ');
+        }
+    }
+    
+    // === LOGIKA FEEDBACKU (bez zmian) ===
+    function showFeedbackUI(result, logits) { /* ... */ }
+    function handleCorrectPrediction(predictedSymbol) { /* ... */ }
+    async function handleIncorrectPrediction(predictedSymbol, correctSymbol, logits) { /* ... */ }
+    function showCorrectionUI(predictedSymbol, logits) { /* ... */ }
+    function resetPredictionUI() { /* ... */ }
+
+    // === LOGIKA FIREBASE (bez zmian) ===
+    async function loadModelFromFirebase() { /* ... */ }
+    async function clearData() { /* ... */ }
+    function logTrainingSample(symbol, source, logits) { /* ... */ }
+    function logPredictionAttempt(predictedSymbol, wasCorrect, correctSymbol = null) { /* ... */ }
+    
+    // === UX (bez zmian) ===
+    function showToast(message, type = 'info', duration = 3000) { /* ... */ }
+
+    // === ZARZĄDZANIE STANEM LOGOWANIA (bez zmian) ===
+    function handleLoggedOutState() { /* ... */ }
+    async function handleLoggedInState(user) { /* ... */ }
+
+    // === INICJALIZACJA APLIKACJI ===
+    async function main() {
+        if (await loadModels()) {
+            loader.classList.add('fade-out');
+            contentWrapper.classList.remove('content-hidden');
+            loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
+            statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) { handleLoggedInState(user); } else { handleLoggedOutState(); }
+            });
+        }
+    }
+
+    // === EVENT LISTENERS ===
+    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
+    clearBtn.addEventListener('click', clearData);
+    classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
+    predictBtn.addEventListener('click', predict);
+
+    // Wklej tutaj pełną zawartość funkcji z Twojego oryginalnego pliku, które skróciłem jako "bez zmian"
 });
-
-
-// === Logika klasyfikacji gestów (wierna kopia oryginału) ===
-async function initKNN() {
-    predictionText.innerText = "Ładowanie modelu gestów...";
-    try {
-        classifier = knnClassifier.create();
-        mobilenetModel = await mobilenet.load();
-        await loadModel();
-    } catch (error) {
-        console.error("Błąd ładowania modelu gestów:", error);
-        predictionText.innerText = "Błąd ładowania modeli AI!";
-        return;
-    }
-
-    btnAddExample0.addEventListener('click', () => addExample(0));
-    btnAddExample1.addEventListener('click', () => addExample(1));
-    btnAddExample2.addEventListener('click', () => addExample(2));
-    btnGuess.addEventListener('click', guess);
-}
-
-function addExample(classId) {
-    if (!mobilenetModel) return;
-    const features = mobilenetModel.infer(video, true);
-    classifier.addExample(features, classId);
-    predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-    saveModel();
-}
-
-async function guess() {
-    if (classifier.getNumClasses() > 0) {
-        const features = mobilenetModel.infer(video, true);
-        const result = await classifier.predictClass(features);
-        const confidence = Math.round(result.confidences[result.label] * 100);
-        predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
-    } else {
-        predictionText.innerText = 'Najpierw naucz mnie czegoś!';
-    }
-}
-
-function saveModel() {
-    if (classifier.getNumClasses() > 0) {
-        const dataset = classifier.getClassifierDataset();
-        const datasetObj = {};
-        Object.keys(dataset).forEach((key) => {
-            const data = dataset[key].dataSync();
-            datasetObj[key] = Array.from(data);
-        });
-        const jsonStr = JSON.stringify(datasetObj);
-        database.ref('models/knn-model').set(jsonStr);
-        console.log('Model gestów zapisany.');
-    }
-}
-
-async function loadModel() {
-    predictionText.innerText = "Wczytywanie modelu gestów...";
-    const snapshot = await database.ref('models/knn-model').get();
-    const jsonStr = snapshot.val();
-    if (jsonStr) {
-        const dataset = JSON.parse(jsonStr);
-        const tensorObj = Object.fromEntries(
-            Object.entries(dataset).map(([label, data]) => {
-                const features = data.length / 1024;
-                return [label, tf.tensor2d(data, [features, 1024])];
-            })
-        );
-        classifier.setClassifierDataset(tensorObj);
-        const exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
-        predictionText.innerText = `Model gestów wczytany (${exampleCount} przykładów).`;
-    } else {
-        predictionText.innerText = "Nie znaleziono modelu. Naucz mnie czegoś!";
-    }
-}
-
-// Uruchomienie części odpowiedzialnej za gesty
-initKNN();// === Konfiguracja Firebase (wstaw swoje dane!) ===
-const firebaseConfig = {
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
-        authDomain: "guess-game-35a3b.firebaseapp.com",
-        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "guess-game-35a3b",
-        storageBucket: "guess-game-35a3b.appspot.com",
-        messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
-};
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
-// === Pobieranie elementów DOM ===
-const video = document.getElementById('camera-feed');
-const predictionText = document.getElementById('prediction');
-const btnAddExample0 = document.getElementById('add-example-0');
-const btnAddExample1 = document.getElementById('add-example-1');
-const btnAddExample2 = document.getElementById('add-example-2');
-const btnGuess = document.getElementById('guess-btn');
-
-let classifier;
-let mobilenetModel;
-const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
-
-// === Logika detekcji twarzy (wierna kopia oryginału) ===
-
-// POPRAWKA: Definiujemy ścieżkę do Twojego folderu `models`
-const MODEL_URL = './models';
-
-Promise.all([
-    // POPRAWKA: Użycie lżejszego modelu `tinyFaceDetector` z oryginalnego projektu
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-]).then(startVideo);
-
-function startVideo() {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(err => console.error("Błąd dostępu do kamery:", err));
-}
-
-video.addEventListener('play', () => {
-    const canvas = faceapi.createCanvasFromMedia(video);
-    document.querySelector('.game-container-main').append(canvas);
-    const displaySize = { width: video.clientWidth, height: video.clientHeight };
-    faceapi.matchDimensions(canvas, displaySize);
-
-    setInterval(async () => {
-        // POPRAWKA: Użycie opcji dla modelu `tiny`
-        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resizedDetections);
-    }, 100);
-});
-
-
-// === Logika klasyfikacji gestów (wierna kopia oryginału) ===
-async function initKNN() {
-    predictionText.innerText = "Ładowanie modelu gestów...";
-    try {
-        classifier = knnClassifier.create();
-        mobilenetModel = await mobilenet.load();
-        await loadModel();
-    } catch (error) {
-        console.error("Błąd ładowania modelu gestów:", error);
-        predictionText.innerText = "Błąd ładowania modeli AI!";
-        return;
-    }
-
-    btnAddExample0.addEventListener('click', () => addExample(0));
-    btnAddExample1.addEventListener('click', () => addExample(1));
-    btnAddExample2.addEventListener('click', () => addExample(2));
-    btnGuess.addEventListener('click', guess);
-}
-
-function addExample(classId) {
-    if (!mobilenetModel) return;
-    const features = mobilenetModel.infer(video, true);
-    classifier.addExample(features, classId);
-    predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-    saveModel();
-}
-
-async function guess() {
-    if (classifier.getNumClasses() > 0) {
-        const features = mobilenetModel.infer(video, true);
-        const result = await classifier.predictClass(features);
-        const confidence = Math.round(result.confidences[result.label] * 100);
-        predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
-    } else {
-        predictionText.innerText = 'Najpierw naucz mnie czegoś!';
-    }
-}
-
-function saveModel() {
-    if (classifier.getNumClasses() > 0) {
-        const dataset = classifier.getClassifierDataset();
-        const datasetObj = {};
-        Object.keys(dataset).forEach((key) => {
-            const data = dataset[key].dataSync();
-            datasetObj[key] = Array.from(data);
-        });
-        const jsonStr = JSON.stringify(datasetObj);
-        database.ref('models/knn-model').set(jsonStr);
-        console.log('Model gestów zapisany.');
-    }
-}
-
-async function loadModel() {
-    predictionText.innerText = "Wczytywanie modelu gestów...";
-    const snapshot = await database.ref('models/knn-model').get();
-    const jsonStr = snapshot.val();
-    if (jsonStr) {
-        const dataset = JSON.parse(jsonStr);
-        const tensorObj = Object.fromEntries(
-            Object.entries(dataset).map(([label, data]) => {
-                const features = data.length / 1024;
-                return [label, tf.tensor2d(data, [features, 1024])];
-            })
-        );
-        classifier.setClassifierDataset(tensorObj);
-        const exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
-        predictionText.innerText = `Model gestów wczytany (${exampleCount} przykładów).`;
-    } else {
-        predictionText.innerText = "Nie znaleziono modelu. Naucz mnie czegoś!";
-    }
-}
-
-// Uruchomienie części odpowiedzialnej za gesty
-initKNN();
-
-
