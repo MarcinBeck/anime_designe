@@ -1,13 +1,4 @@
-/* === Zmienne kolorów === */
-:root {
-    --color-primary: #c2185b;
-    --color-magenta: #c2185b; 
-    --color-dark: #1a1a1a;
-    --color-light: #ffffff;
-    --color-success: #2e7d32;
-}
-
-/* === Style globalne === */
+/* === Style globalne i wspólne === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 62.5%; }
 body {
@@ -15,19 +6,15 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: #333;
-    background-color: #f5f5f5;
-}
-#game-container {
+    background-color: #222;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
-h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
-
-/* === Wspólny nagłówek i stopka === */
 .main-header {
-    background-color: var(--color-light);
+    background-color: #fff;
     padding: 1.5rem 0;
     height: 80px;
     display: flex;
@@ -37,84 +24,44 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .main-header .container { display: flex; justify-content: space-between; align-items: center; }
 .logo-img { height: 5rem; }
 .main-nav ul { list-style: none; display: flex; gap: 3rem; }
-.main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: var(--color-magenta); }
-.main-footer {
-    background-color: var(--color-dark);
-    color: var(--color-light);
-    text-align: center;
-    padding: 2rem;
-    margin-top: auto;
-}
+.main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: #c2185b; }
 
 /* === Główny kontener gry === */
 .game-container-main {
     flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4rem 2rem;
-}
-
-/* Ekran startowy */
-#start-screen {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-#game-container.game-active #start-screen {
-    display: none;
-}
-
-/* Uproszczony layout gry */
-#game-layout {
-    display: none;
-    width: 100%;
-    max-width: 720px;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-}
-#game-container.game-active #game-layout {
-    display: flex;
-}
-
-.video-container {
     position: relative;
-    width: 100%;
-    background-color: #222;
-    border-radius: 8px;
     overflow: hidden;
-    line-height: 0; /* Usuwa dodatkową przestrzeń pod wideo */
 }
-#camera-feed, #overlay-canvas {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-#overlay-canvas {
+#camera-feed {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: 0;
+    transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
-
 .controls-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.7);
     padding: 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
+    z-index: 10;
 }
 .prediction-output {
-    color: var(--color-primary);
+    color: #fff;
     font-size: 2.4rem;
     font-weight: 700;
     min-height: 3rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 .buttons-group {
     display: flex;
@@ -126,16 +73,14 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     display: inline-block;
     padding: 1rem 2.8rem;
     border-radius: 8px;
-    border: 2px solid #ccc;
+    border: 2px solid #fff;
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
-    background-color: #fff;
-    color: #333;
+    background-color: transparent;
+    color: #fff;
     transition: all 0.2s ease;
 }
-.btn:hover { background-color: #eee; border-color: #aaa; }
-.btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
-.btn-large:hover { background-color: var(--color-primary); color: #fff; }
-.btn-primary { background-color: var(--color-success); border-color: var(--color-success); color: #fff; }
-.btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
+.btn:hover { background-color: #fff; color: #222; }
+.btn-primary { background-color: #2e7d32; border-color: #2e7d32; }
+.btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; color: #fff; }
