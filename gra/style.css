@@ -1,14 +1,3 @@
-/* === Zmienne kolorów === */
-:root {
-    --color-primary: #c2185b;
-    --color-magenta: #c2185b; 
-    --color-dark: #1a1a1a;
-    --color-light: #ffffff;
-    --color-stop-red: #d32f2f;
-    --color-success: #2e7d32;
-}
-
-/* === Style globalne === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 62.5%; }
 body {
@@ -17,16 +6,11 @@ body {
     line-height: 1.7;
     color: #333;
     background-color: #f5f5f5;
-}
-#game-container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
-h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
-
-/* === Wspólny nagłówek i stopka === */
 .main-header {
     background-color: #fff;
     padding: 1.5rem 0;
@@ -39,130 +23,82 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
 .main-header .container { display: flex; justify-content: space-between; align-items: center; }
 .logo-img { height: 5rem; }
 .main-nav ul { list-style: none; display: flex; gap: 3rem; }
-.main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: var(--color-magenta); }
-.main-footer {
-    background-color: var(--color-dark);
-    color: var(--color-light);
-    text-align: center;
-    padding: 2rem;
-    margin-top: auto;
-}
+.main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: #c2185b; }
 
-/* === Główny kontener gry === */
+/* --- Style specyficzne dla gry --- */
 .game-container-main {
     flex-grow: 1;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4rem 2rem;
-    position: relative; /* Dla pozycjonowania przycisku STOP */
-}
-
-/* Ekran startowy */
-#start-screen {
-    text-align: center;
-    display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-}
-#game-container.game-active #start-screen {
-    display: none;
-}
-
-/* Layout gry po starcie */
-#game-layout {
-    display: none;
+    padding: 2rem;
     width: 100%;
-    max-width: 800px;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-}
-#game-container.game-active #game-layout {
-    display: flex;
 }
 
-/* Kontener wideo i "szyby" do rysowania */
+#loader { text-align: center; }
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #c2185b;
+    animation: spin 1s ease infinite;
+    margin: 0 auto 1rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.content-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2rem; width: 100%; max-width: 900px;}
+.content-hidden { display: none; }
+
 .video-container {
     position: relative;
     width: 100%;
-    background-color: #222;
+    max-width: 640px;
     border-radius: 8px;
     overflow: hidden;
     line-height: 0;
 }
-#camera-feed, #overlay-canvas {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-#overlay-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-}
+#video { width: 100%; display: block; }
+#overlay { position: absolute; top: 0; left: 0; }
 
-/* Panel z kontrolkami */
-.controls-panel {
-    width: 100%;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 2rem;
+.controls, .classes, .feedback-actions, .gallery-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.symbol-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-}
-.prediction-output {
-    color: var(--color-primary);
-    font-size: 2.4rem;
-    font-weight: 700;
-    min-height: 3rem;
-}
-.buttons-group {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.btn {
-    display: inline-block;
-    padding: 1rem 2.8rem;
+    padding: 2rem;
+    background: #fff;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    border: 2px solid #ccc;
-    font-size: 1.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    background-color: #fff;
-    color: #333;
-    transition: all 0.2s ease;
+    width: 100%;
 }
-.btn:hover { background-color: #eee; border-color: #aaa; }
-.btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
-.btn-large:hover { background-color: var(--color-primary); color: #fff; }
-.btn-primary { background-color: var(--color-success); border-color: var(--color-success); color: #fff; }
+.hidden { display: none !important; }
+
+.status { font-weight: bold; font-size: 1.4rem; color: #555; }
+.prediction { font-size: 2.2rem; font-weight: bold; color: #c2185b; min-height: 3rem; }
+#prediction-area { text-align: center; }
+
+.gallery-container { width: 100%; margin-top: 2rem; }
+.gallery { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;}
+.gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; }
+.gallery-info { color: #888; }
+.clear-button { background: #fbe9e7; color: #c62828; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+
+#toast-container { position: fixed; top: 90px; right: 20px; z-index: 1000; }
+.toast { padding: 1.5rem; border-radius: 8px; color: #fff; margin-bottom: 1rem; animation: slideIn 0.5s forwards; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+.toast.info { background-color: #0277bd; }
+.toast.error { background-color: #c62828; }
+@keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+@keyframes slideOut { to { transform: translateX(120%); } }
+
+button { padding: 1rem 2rem; border-radius: 8px; border: 2px solid transparent; font-size: 1.6rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+.btn-primary { background-color: #2e7d32; border-color: #2e7d32; color: #fff; }
 .btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
-.btn-stop {
-    position: absolute;
-    top: 100px;
-    right: 3rem;
-    z-index: 15;
-    width: 50px;
-    height: 50px;
-    padding: 0;
-    font-size: 2.4rem;
-    line-height: 1;
-    border-radius: 50%;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--color-stop-red); 
-    border-color: var(--color-stop-red); 
-    color: var(--color-light);
-}
-#game-container.game-active #stop-btn {
-    display: flex;
-}
-.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
+.logout-btn { color: #c62828; }
