@@ -6,7 +6,9 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: #333;
-    background-color: #f5f5f5; /* Tło dla obszarów poza grą */
+    background-color: #f5f5f5;
+}
+#game-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -31,9 +33,9 @@ body {
     flex-grow: 1;
     position: relative;
     overflow: hidden;
-    background-color: #222; /* Tło widoczne zanim kamera się załaduje */
+    background-color: #222;
 }
-#camera-feed, #overlay-canvas { /* Obie warstwy mają ten sam rozmiar i pozycję */
+#camera-feed, #overlay-canvas {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -41,15 +43,14 @@ body {
     min-height: 100%;
     width: auto;
     height: auto;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Odwracamy obraz poziomo */
+    transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
 #camera-feed {
-    z-index: -1; /* Wideo pod overlayem */
+    z-index: 0; /* POPRAWKA: Ustawia wideo jako tło dla tej sekcji, a nie za nią */
 }
 #overlay-canvas {
-    z-index: 5; /* Overlay nad wideo, do rysowania ramek */
+    z-index: 5;
 }
-
 .controls-panel {
     position: absolute;
     bottom: 0;
