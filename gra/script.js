@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    await tf.setBackend('cpu');
-    console.log('TensorFlow.js backend ustawiony na CPU.');
-
     // === Konfiguracja Firebase (wstaw swoje dane!) ===
     const firebaseConfig = {
         apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
@@ -15,32 +12,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Ustawienie backendu AI na CPU dla stabilności
+    await tf.setBackend('cpu');
+    console.log('TensorFlow.js backend ustawiony na CPU.');
+
     // === Elementy DOM ===
     const gameContainer = document.getElementById('game-container');
     const startBtn = document.getElementById('start-btn');
     const stopBtn = document.getElementById('stop-btn');
     const video = document.getElementById('camera-feed');
     const predictionText = document.getElementById('prediction');
-    const addExampleButtons = document.querySelectorAll('.learning-module .btn');
+    const addExampleButtons = document.querySelectorAll('.buttons-group .btn[data-class-id]');
     const guessBtn = document.getElementById('guess-btn');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const overlayCanvas = document.getElementById('overlay-canvas');
     const overlayCtx = overlayCanvas.getContext('2d');
     const exampleCounterSpan = document.getElementById('example-counter');
-    const feedbackModal = document.getElementById('feedback-modal');
-    const feedbackQuestion = document.getElementById('feedback-question');
-    const btnYes = document.getElementById('feedback-yes');
-    const btnNo = document.getElementById('feedback-no');
-    const correctionPanel = document.getElementById('correction-panel');
-    const correctionButtons = document.querySelectorAll('.correction-panel .btn');
 
     let classifier, mobilenetModel, faceModel, videoStream, currentROI;
-    let lastPrediction, lastFeatures;
     let exampleCount = 0;
     const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
     // === GŁÓWNE FUNKCJE APLIKACJI ===
+    
     async function init() {
         gameContainer.classList.add('game-active');
         predictionText.innerText = 'Uruchamianie kamery...';
@@ -50,14 +45,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             videoStream = stream;
             video.srcObject = stream;
             
-            await video.play(); // Czekamy, aż wideo faktycznie się uruchomi
-
-            // Dopiero teraz ustawiamy wymiary canvasów na podstawie WIDOCZNEGO rozmiaru wideo
-            overlayCanvas.width = video.clientWidth;
-            overlayCanvas.height = video.clientHeight;
-            canvas.width = video.clientWidth;
-            canvas.height = video.clientHeight;
-
+            await new Promise(resolve => {
+                video.onloadeddata = () => {
+                    overlayCanvas.width = video.clientWidth;
+                    overlayCanvas.height = video.clientHeight;
+                    canvas.width = video.clientWidth;
+                    canvas.height = video.clientHeight;
+                    resolve();
+                };
+            });
         } catch (error) {
             predictionText.innerText = "Błąd dostępu do kamery!";
             console.error(error);
@@ -71,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mobilenet.load(),
                 faceLandmarksDetection.load(faceLandmarksDetection.SupportedPackages.mediaPipeFaceMesh)
             ]);
-            await loadModel();
+            await loadModel(); // Automatyczne wczytywanie modelu z Firebase
         } catch (error) { 
             predictionText.innerText = "Błąd ładowania modeli AI!";
             console.error(error);
@@ -84,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function predictLoop() {
         if (!videoStream) return;
 
-        // Skalowanie współrzędnych
         const scaleX = video.clientWidth / video.videoWidth;
         const scaleY = video.clientHeight / video.videoHeight;
 
@@ -119,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     function getFeaturesFromROI() {
-        if (!currentROI || !mobilenetModel) return null;
+        if (!currentROI) return null;
         
         const scaleX = video.videoWidth / video.clientWidth;
         const scaleY = video.videoHeight / video.clientHeight;
@@ -143,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             exampleCount++;
             updateStats();
             predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-            saveModel();
+            saveModel(); // Automatyczny zapis po dodaniu przykładu
         } else {
             predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
         }
@@ -154,12 +149,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const features = getFeaturesFromROI();
             if (features) {
                 const result = await classifier.predictClass(features);
-                lastPrediction = result;
-                lastFeatures = features;
                 const confidence = Math.round(result.confidences[result.label] * 100);
-                const predictedClass = CLASS_NAMES[result.label];
-                feedbackQuestion.innerText = `Czy to jest ${predictedClass}? (pewność: ${confidence}%)`;
-                showFeedbackModal(true);
+                predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
             } else {
                 predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
             }
@@ -168,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
+    // === PRZYWRÓCONE FUNKCJE FIREBASE ===
     function saveModel() {
         if (classifier.getNumClasses() > 0) {
             const dataset = classifier.getClassifierDataset();
@@ -183,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadModel() {
-        predictionText.innerText = 'Wczytywanie modelu z chmurzy...';
+        predictionText.innerText = 'Wczytywanie modelu z chmury...';
         const snapshot = await database.ref('models/knn-model').get();
         const jsonStr = snapshot.val();
         if (jsonStr) {
@@ -202,7 +194,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             predictionText.innerText = 'Nie znaleziono zapisanego modelu. Naucz mnie czegoś!';
         }
     }
-    
+
+    // === Funkcje pomocnicze i Event Listeners ===
     function stopGame() {
         if (videoStream) videoStream.getTracks().forEach(track => track.stop());
         video.srcObject = null;
@@ -211,29 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         gameContainer.classList.remove('game-active');
     }
 
-    function updateStats() { if(exampleCounterSpan) exampleCounterSpan.innerText = exampleCount; }
-    function handleFeedback(isCorrect) {
-        if (isCorrect) {
-            predictionText.innerText = 'Super! Uczę się dalej.';
-            showFeedbackModal(false);
-        } else { correctionPanel.style.display = 'block'; }
-    }
-    function handleCorrection(correctClassId) {
-        const features = getFeaturesFromROI();
-        if(features) classifier.addExample(features, correctClassId);
-        predictionText.innerText = `Dzięki! Zapamiętam, że to był ${CLASS_NAMES[correctClassId]}.`;
-        showFeedbackModal(false);
-    }
-    function showFeedbackModal(show) {
-        if(feedbackModal) feedbackModal.classList.toggle('visible', show);
-        if(show && correctionPanel) correctionPanel.style.display = 'none';
+    function updateStats() { 
+        if(exampleCounterSpan) exampleCounterSpan.innerText = exampleCount; 
     }
 
     startBtn.addEventListener('click', init);
     stopBtn.addEventListener('click', stopGame);
     guessBtn.addEventListener('click', guess);
-    addExampleButtons.forEach(button => button.addEventListener('click', () => addExample(button.dataset.classId)));
-    btnYes.addEventListener('click', () => handleFeedback(true));
-    btnNo.addEventListener('click', () => handleFeedback(false));
-    correctionButtons.forEach(button => button.addEventListener('click', () => handleCorrection(button.dataset.classId)));
+    addExampleButtons.forEach(button => {
+        button.addEventListener('click', () => addExample(button.dataset.classId));
+    });
 });
