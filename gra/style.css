@@ -33,7 +33,7 @@ body {
     overflow: hidden;
     background-color: #222; /* Tło widoczne zanim kamera się załaduje */
 }
-#camera-feed {
+#camera-feed, #overlay-canvas { /* Obie warstwy mają ten sam rozmiar i pozycję */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -41,9 +41,15 @@ body {
     min-height: 100%;
     width: auto;
     height: auto;
-    z-index: -1; /* POPRAWKA: Ustawia wideo pod treścią, ale nad tłem kontenera */
-    transform: translateX(-50%) translateY(-50%) scaleX(-1);
+    transform: translateX(-50%) translateY(-50%) scaleX(-1); /* Odwracamy obraz poziomo */
 }
+#camera-feed {
+    z-index: -1; /* Wideo pod overlayem */
+}
+#overlay-canvas {
+    z-index: 5; /* Overlay nad wideo, do rysowania ramek */
+}
+
 .controls-panel {
     position: absolute;
     bottom: 0;
