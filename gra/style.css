@@ -1,12 +1,8 @@
-/* Poprzednie style bez zmian... */
-/* (wklej cały plik, aby mieć pewność) */
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
     font-size: 1.6rem;
-    line-height: 1.7;
     color: #333;
     background-color: #222;
     display: flex;
@@ -44,14 +40,13 @@ body {
     z-index: 0;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
-/* Styl dla canvasa tworzonego przez face.js */
+/* Styl dla canvasa tworzonego przez face-api.js */
 .game-container-main canvas {
     position: absolute;
     top: 0;
     left: 0;
     z-index: 5;
 }
-
 .controls-panel {
     position: absolute;
     bottom: 0;
