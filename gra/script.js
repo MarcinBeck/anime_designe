@@ -14,6 +14,10 @@ const database = firebase.database();
 // === Pobieranie elementów DOM ===
 const video = document.getElementById('camera-feed');
 const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true }); // Ustawienie dla wydajności
+const overlayCanvas = document.getElementById('overlay-canvas'); // Nowy element
+const overlayCtx = overlayCanvas.getContext('2d', { willReadFrequently: true }); // Kontekst dla nakładki
+
 const predictionText = document.getElementById('prediction');
 const btnAddExample0 = document.getElementById('add-example-0');
 const btnAddExample1 = document.getElementById('add-example-1');
@@ -22,6 +26,8 @@ const btnGuess = document.getElementById('guess-btn');
 
 let classifier;
 let mobilenetModel;
+let faceModel; // Deklaracja modelu do detekcji twarzy
+let currentROI; // Obszar zainteresowania dla gestu
 const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
 /**
@@ -33,8 +39,16 @@ async function init() {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = stream;
         await video.play();
+
+        // Ustawienie wymiarów canvasów PO uruchomieniu wideo
+        overlayCanvas.width = video.videoWidth;
+        overlayCanvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
     } catch (error) {
         predictionText.innerText = "Błąd dostępu do kamery!";
+        console.error(error);
         return;
     }
 
@@ -42,12 +56,16 @@ async function init() {
     try {
         classifier = knnClassifier.create();
         mobilenetModel = await mobilenet.load();
-        await loadModel(); // Automatyczne wczytywanie modelu
+        faceModel = await faceLandmarksDetection.load(faceLandmarksDetection.SupportedPackages.mediaPipeFaceMesh); // Ładowanie modelu twarzy
+        await loadModel();
     } catch (error) {
         console.error(error);
         predictionText.innerText = "Błąd ładowania modeli AI!";
         return;
     }
+
+    // Uruchamiamy pętlę do predykcji i rysowania ramek
+    predictLoop();
 
     // Nasłuchiwanie na przyciski
     btnAddExample0.addEventListener('click', () => addExample(0));
@@ -56,20 +74,84 @@ async function init() {
     btnGuess.addEventListener('click', guess);
 }
 
+/**
+ * Główna pętla do wykrywania twarzy i rysowania ramek.
+ */
+async function predictLoop() {
+    if (!video.srcObject) return;
+
+    // Wyczyść canvas nakładki
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    currentROI = null; // Resetujemy obszar zainteresowania
+
+    const faces = await faceModel.estimateFaces({input: video});
+
+    if (faces.length > 0) {
+        const faceBox = faces[0].boundingBox;
+        
+        // Rysuj zieloną ramkę wokół twarzy
+        overlayCtx.strokeStyle = 'green';
+        overlayCtx.lineWidth = 4;
+        overlayCtx.strokeRect(faceBox.xMin, faceBox.yMin, faceBox.width, faceBox.height);
+        
+        // Oblicz i narysuj niebieską ramkę dla gestu (pod twarzą)
+        const roiY = faceBox.yMin + faceBox.height * 0.8;
+        const roiHeight = faceBox.height * 1.5;
+        const roiWidth = faceBox.width * 1.5;
+        const roiX = faceBox.xMin - (roiWidth - faceBox.width) / 2;
+        currentROI = { x: roiX, y: roiY, width: roiWidth, height: roiHeight };
+        
+        overlayCtx.strokeStyle = 'blue';
+        overlayCtx.lineWidth = 4;
+        overlayCtx.strokeRect(currentROI.x, currentROI.y, currentROI.width, currentROI.height);
+    }
+
+    requestAnimationFrame(predictLoop); // Kontynuuj pętlę
+}
+
+function getFeaturesFromROI() {
+    if (!currentROI || !mobilenetModel) return null;
+
+    // Rysujemy tylko obszar ROI na ukrytym canvasie do inferencji
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, currentROI.x, currentROI.y, currentROI.width, currentROI.height, 0, 0, 224, 224);
+    return mobilenetModel.infer(canvas, true);
+}
+
+
 function addExample(classId) {
-    if (!mobilenetModel) return;
-    const features = mobilenetModel.infer(video, true);
-    classifier.addExample(features, classId);
-    predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
-    saveModel(); // Automatyczny zapis
+    // Sprawdzamy, czy currentROI jest dostępne (czy wykryto twarz i gest)
+    if (!currentROI) {
+        predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
+        return;
+    }
+
+    const features = getFeaturesFromROI();
+    if (features) {
+        classifier.addExample(features, classId);
+        predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
+        saveModel();
+    } else {
+        predictionText.innerText = 'Nie udało się pobrać cech z obszaru gestu!';
+    }
 }
 
 async function guess() {
     if (classifier.getNumClasses() > 0) {
-        const features = mobilenetModel.infer(video, true);
-        const result = await classifier.predictClass(features);
-        const confidence = Math.round(result.confidences[result.label] * 100);
-        predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
+        // Sprawdzamy, czy currentROI jest dostępne
+        if (!currentROI) {
+            predictionText.innerText = 'Pokaż twarz, aby określić obszar gestu!';
+            return;
+        }
+
+        const features = getFeaturesFromROI();
+        if (features) {
+            const result = await classifier.predictClass(features);
+            const confidence = Math.round(result.confidences[result.label] * 100);
+            predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
+        } else {
+            predictionText.innerText = 'Nie udało się pobrać cech z obszaru gestu!';
+        }
     } else {
         predictionText.innerText = 'Najpierw naucz mnie czegoś!';
     }
