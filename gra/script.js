@@ -13,7 +13,6 @@ const database = firebase.database();
 
 // === Pobieranie elementów DOM ===
 const video = document.getElementById('camera-feed');
-const canvas = document.getElementById('canvas');
 const predictionText = document.getElementById('prediction');
 const btnAddExample0 = document.getElementById('add-example-0');
 const btnAddExample1 = document.getElementById('add-example-1');
@@ -24,20 +23,39 @@ let classifier;
 let mobilenetModel;
 const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-/**
- * Główna funkcja inicjująca, uruchamiana automatycznie.
- */
-async function init() {
-    predictionText.innerText = "Uruchamianie kamery...";
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        await video.play();
-    } catch (error) {
-        predictionText.innerText = "Błąd dostępu do kamery!";
-        return;
-    }
+// === Logika z oryginalnego face.js ===
+Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri('/anime_designe/gra/models'),
+    faceapi.nets.faceLandmark68Net.loadFromUri('/anime_designe/gra/models'),
+    faceapi.nets.faceRecognitionNet.loadFromUri('/anime_designe/gra/models'),
+    faceapi.nets.faceExpressionNet.loadFromUri('/anime_designe/gra/models')
+]).then(startVideo);
 
+function startVideo() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => console.error(err));
+}
+
+video.addEventListener('play', () => {
+    const canvas = faceapi.createCanvasFromMedia(video);
+    document.querySelector('.game-container-main').append(canvas);
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(canvas, displaySize);
+
+    setInterval(async () => {
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        faceapi.draw.drawDetections(canvas, resizedDetections);
+    }, 100);
+});
+
+
+// === Logika z oryginalnego script.js (do gestów) ===
+async function initKNN() {
     predictionText.innerText = "Ładowanie modeli AI...";
     try {
         classifier = knnClassifier.create();
@@ -48,8 +66,6 @@ async function init() {
         predictionText.innerText = "Błąd ładowania modeli AI!";
         return;
     }
-
-    // Nasłuchiwanie na przyciski
     btnAddExample0.addEventListener('click', () => addExample(0));
     btnAddExample1.addEventListener('click', () => addExample(1));
     btnAddExample2.addEventListener('click', () => addExample(2));
@@ -109,6 +125,5 @@ async function loadModel() {
     }
 }
 
-// Uruchomienie aplikacji
-init();
-
+// Uruchomienie części odpowiedzialnej za gesty
+initKNN();
