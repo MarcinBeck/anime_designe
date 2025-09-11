@@ -39,28 +39,28 @@
             <div class="video-container">
                 <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
+
+                <div id="status" class="status"></div>
+                <button id="stop-btn" class="btn-stop hidden">✕</button>
             </div>
             
-            <button id="stop-btn" class="btn btn-stop hidden">✕</button>
-
             <div class="start-game-controls">
                 <button id="camera-toggle-btn">Start kamera</button>
             </div>
 
             <div id="symbol-section" class="symbol-section hidden">
                 <div class="prediction-area-top">
-                    <div class="status" id="status"></div>
                     <div id="prediction" class="prediction"></div>
                     <div class="feedback" id="feedback-container"></div>
                 </div>
                 
                 <div class="buttons-control-line">
-                    <button id="predictBtn" class="btn btn-primary" disabled>Zgadnij symbol</button>
+                    <button id="predictBtn" class="btn-primary">Zgadnij symbol</button>
                     <span class="add-label">Dodaj:</span>
                     <div class="classes">
-                        <button class="btn" data-class="KOŁO" disabled>KOŁO</button>
-                        <button class="btn" data-class="KWADRAT" disabled>KWADRAT</button>
-                        <button class="btn" data-class="TRÓJKĄT" disabled>TRÓJKĄT</button>
+                        <button class="btn" data-class="KOŁO">KOŁO</button>
+                        <button class="btn" data-class="KWADRAT">KWADRAT</button>
+                        <button class="btn" data-class="TRÓJKĄT">TRÓJKĄT</button>
                     </div>
                 </div>
                 <div class="gallery-container">
@@ -86,7 +86,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <script>
       var firebaseConfig = { 
-        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+              apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
         authDomain: "guess-game-35a3b.firebaseapp.com",
         databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "guess-game-35a3b",
