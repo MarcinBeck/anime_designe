@@ -39,37 +39,39 @@
             <div class="video-container">
                 <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
-
-                <div id="status" class="status"></div>
-                <button id="stop-btn" class="btn-stop hidden">✕</button>
             </div>
             
-            <div class="start-game-controls">
-                <button id="camera-toggle-btn">Start kamera</button>
+            <div class="controls-overlay">
+                <div class="top-controls">
+                    <button id="stop-btn" class="btn-stop hidden">✕</button>
+                </div>
+                <div id="symbol-section" class="symbol-section hidden">
+                    <div class="status" id="status"></div>
+                    <div class="prediction" id="prediction"></div>
+                    <div class="feedback" id="feedback-container"></div>
+                    <div class="buttons-control-line">
+                        <button id="predictBtn" class="btn-primary" disabled>Zgadnij symbol</button>
+                        <span class="add-label">Dodaj:</span>
+                        <div class="classes">
+                            <button data-class="KOŁO" disabled>KOŁO</button>
+                            <button data-class="KWADRAT" disabled>KWADRAT</button>
+                            <button data-class="TRÓJKĄT" disabled>TRÓJKĄT</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="symbol-section" class="symbol-section hidden">
-                <div class="prediction-area-top">
-                    <div id="prediction" class="prediction"></div>
-                    <div class="feedback" id="feedback-container"></div>
+            <div class="start-game-controls">
+                <div id="auth-container-start"></div>
+                <button id="camera-toggle-btn">Start Kamera</button>
+            </div>
+
+            <div class="gallery-container hidden">
+                <div class="gallery-header">
+                    <h2>Zebrane próbki:</h2>
+                    <button id="clearBtn" class="clear-button" disabled>Wyczyść dane</button>
                 </div>
-                
-                <div class="buttons-control-line">
-                    <button id="predictBtn" class="btn-primary">Zgadnij symbol</button>
-                    <span class="add-label">Dodaj:</span>
-                    <div class="classes">
-                        <button class="btn" data-class="KOŁO">KOŁO</button>
-                        <button class="btn" data-class="KWADRAT">KWADRAT</button>
-                        <button class="btn" data-class="TRÓJKĄT">TRÓJKĄT</button>
-                    </div>
-                </div>
-                <div class="gallery-container">
-                    <div class="gallery-header">
-                        <h2>Zebrane próbki:</h2>
-                        <button id="clearBtn" class="clear-button" disabled>Wyczyść dane</button>
-                    </div>
-                    <div class="gallery" id="gallery"></div>
-                </div>
+                <div class="gallery" id="gallery"></div>
             </div>
         </div>
     </main>
@@ -86,13 +88,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <script>
       var firebaseConfig = { 
-              apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
         authDomain: "guess-game-35a3b.firebaseapp.com",
         databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "guess-game-35a3b",
         storageBucket: "guess-game-35a3b.appspot.com",
         messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"    
+        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"          
       };
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database(); 
