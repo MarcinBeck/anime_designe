@@ -1,298 +1,320 @@
 'use strict';
 
 window.addEventListener('DOMContentLoaded', () => {
+    const loader = document.getElementById('loader');
+    const loaderStatus = document.getElementById('loader-status');
+    const contentWrapper = document.querySelector('.content-wrapper');
+    const authContainer = document.getElementById('auth-container');
+    const cameraToggleBtn = document.getElementById('camera-toggle-btn');
+    const symbolSection = document.querySelector('.symbol-section');
+    const classButtons = document.querySelectorAll('.classes button');
+    const predictBtn = document.getElementById('predictBtn');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const gallery = document.getElementById('gallery');
+    const statusEl = document.getElementById('status');
+    const predictionEl = document.getElementById('prediction');
+    const clearBtn = document.getElementById('clearBtn');
+    const overlay = document.getElementById('overlay');
+    const overlayCtx = overlay.getContext('2d');
+    const feedbackContainer = document.getElementById('feedback-container');
 
-    // --- ELEMENTY UI ---
-    const totalSamplesEl = document.getElementById('total-samples');
-    const manualSamplesEl = document.getElementById('manual-samples');
-    const correctionSamplesEl = document.getElementById('correction-samples');
-    const totalPredictionsEl = document.getElementById('total-predictions');
-    const modelAccuracyEl = document.getElementById('model-accuracy');
-    const statsContainer = document.querySelector('.stats-container');
-    const accuracyChartCtx = document.getElementById('accuracyChart').getContext('2d');
-    const historyTableBody = document.getElementById('history-table-body');
-    const pageInfoEl = document.getElementById('page-info');
-    const prevPageBtn = document.getElementById('prev-page');
-    const nextPageBtn = document.getElementById('next-page');
+    let currentUser = null;
+    let currentStream = null;
+    let classifier;
+    let net;
+    const classNames = ["KOŁO", "KWADRAT", "TRÓJKĄT"];
+    let blazeFaceModel;
+    let detectionIntervalId = null;
+    let lastDetectedFace = null;
+    let isCameraOn = false;
 
-    let fullTimeline = [];
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 50;
+    const tensorToJSON = (tensor) => Array.from(tensor.dataSync());
 
-    let accuracyChart;
+    async function loadModels() {
+      loaderStatus.textContent = "Ładowanie modeli AI...";
+      try {
+        [net, blazeFaceModel] = await Promise.all([
+            mobilenet.load(),
+            blazeface.load()
+        ]);
+        classifier = knnClassifier.create();
+        return true;
+      } catch (e) {
+        loaderStatus.textContent = "Błąd krytyczny ładowania modeli AI.";
+        console.error("Błąd ładowania modeli:", e);
+        return false;
+      }
+    }
 
-    let currentSort = { column: 'timestamp', direction: 'desc' }; // Domyślne sortowanie
-
-    const database = firebase.database();
-
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            listenForStats(user.uid);
+    async function runDetectionLoop() {
+      if (isCameraOn && blazeFaceModel && !video.paused && !video.ended) {
+        const faces = await blazeFaceModel.estimateFaces(video, false);
+        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        if (faces.length > 0) {
+          lastDetectedFace = faces[0];
+          const start = lastDetectedFace.topLeft;
+          const end = lastDetectedFace.bottomRight;
+          const size = [end[0] - start[0], end[1] - start[1]];
+          overlayCtx.strokeStyle = '#c2185b';
+          overlayCtx.lineWidth = 4;
+          overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
+          if (feedbackContainer.innerHTML === '') {
+            classButtons.forEach(btn => btn.disabled = false);
+            predictBtn.disabled = false;
+          }
         } else {
-            statsContainer.innerHTML = `
-                <h1>Statystyki</h1>
-                <p>Aby zobaczyć statystyki, musisz być zalogowany.</p>
-                <p style="margin-top: 4rem; text-align: center;"><a href="index.html">Wróć do aplikacji</a></p>
-            `;
+          lastDetectedFace = null;
+          classButtons.forEach(btn => btn.disabled = true);
+          predictBtn.disabled = true;
         }
-    });
-
-function listenForStats(uid) {
-    const samplesRef = database.ref(`training_samples/${uid}`);
-    const predictionsRef = database.ref(`prediction_attempts/${uid}`);
-
-    // Używamy .on() aby dane aktualizowały się w czasie rzeczywistym
-    samplesRef.on('value', samplesSnapshot => {
-        predictionsRef.on('value', predictionsSnapshot => {
-            const samples = [];
-            samplesSnapshot.forEach(child => { samples.push({ id: child.key, ...child.val() }); });
-
-            const predictions = [];
-            predictionsSnapshot.forEach(child => { predictions.push({ id: child.key, ...child.val() }); });
-
-            // Zapisujemy połączone dane do zmiennej globalnej, sortując od najnowszych
-            fullTimeline = [
-                ...samples.map(s => ({ ...s, type: 'sample' })),
-                ...predictions.map(p => ({ ...p, type: 'prediction' }))
-            ].sort((a, b) => b.timestamp - a.timestamp);
-
-            updateSamplesSummary(samples);
-            updatePredictionsSummary(predictions);
-            updateAccuracyChart(samples, predictions);
-            sortTimeline();
-            renderTable(); // Wywołaj renderowanie tabeli
-        });
-    });
-}
-
-
-    function updateSamplesSummary(samples) {
-        totalSamplesEl.textContent = samples.length;
-        const manualSamples = samples.filter(s => s.source === 'manual').length;
-        const correctionSamples = samples.filter(s => s.source === 'correction').length;
-        manualSamplesEl.textContent = manualSamples;
-        correctionSamplesEl.textContent = correctionSamples;
+        detectionIntervalId = setTimeout(runDetectionLoop, 200);
+      }
     }
 
-    function updatePredictionsSummary(predictions) {
-        totalPredictionsEl.textContent = predictions.length;
-        const correctPredictions = predictions.filter(p => p.wasCorrect).length;
-        const accuracy = (predictions.length > 0) ? (correctPredictions / predictions.length * 100) : 0;
-        modelAccuracyEl.textContent = `${accuracy.toFixed(1)}%`;
-    }
-
-    function updateAccuracyChart(samples, predictions) {
-        if (predictions.length === 0) {
-            if (accuracyChart) accuracyChart.destroy();
-            return;
-        };
-
-        const timeline = [
-            ...samples.map(s => ({ ...s, type: 'sample' })),
-            ...predictions.map(p => ({ ...p, type: 'prediction' }))
-        ].sort((a, b) => a.timestamp - b.timestamp);
-
-        const intervalSize = 5;
-        let sampleCount = 0;
-        
-        const predictionsByInterval = {};
-
-        timeline.forEach(event => {
-            if (event.type === 'sample') {
-                sampleCount++;
-            }
-            if (event.type === 'prediction') {
-                const intervalIndex = Math.floor((sampleCount -1 < 0 ? 0 : sampleCount - 1) / intervalSize);
-                if (!predictionsByInterval[intervalIndex]) {
-                    predictionsByInterval[intervalIndex] = [];
-                }
-                predictionsByInterval[intervalIndex].push(event);
-            }
-        });
-
-        const maxInterval = Math.floor((sampleCount -1 < 0 ? 0 : sampleCount - 1) / intervalSize);
-        const chartLabels = [];
-        const chartData = [];
-
-        for (let i = 0; i <= maxInterval; i++) {
-            const label = `${i * intervalSize} - ${i * intervalSize + intervalSize - 1}`;
-            chartLabels.push(label);
-
-            if (predictionsByInterval[i] && predictionsByInterval[i].length > 0) {
-                const intervalPredictions = predictionsByInterval[i];
-                const correct = intervalPredictions.filter(p => p.wasCorrect).length;
-                const accuracy = (correct / intervalPredictions.length) * 100;
-                chartData.push(accuracy);
-            } else {
-                chartData.push(NaN); 
-            }
-        }
-        
-        if (accuracyChart) accuracyChart.destroy();
-
-        accuracyChart = new Chart(accuracyChartCtx, {
-            type: 'line',
-            data: {
-                labels: chartLabels,
-                datasets: [
-                {
-                    label: 'Skuteczność w przedziale',
-                    data: chartData,
-                    borderColor: '#38bdf8',
-                    tension: 0.1,
-                    spanGaps: false,
-                },
-                {
-                    label: 'Poziom losowy (33.3%)',
-                    data: Array(chartLabels.length).fill(33.3),
-                    borderColor: '#f472b6',
-                    borderDash: [5, 5],
-                    fill: false,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                scales: {
-                    x: { title: { display: true, text: 'Liczba zebranych próbek (w przedziałach)' } },
-                    y: { beginAtZero: true, max: 100, title: { display: true, text: 'Skuteczność (%)' } }
-                }
-            }
+    function startCamera() {
+      cameraToggleBtn.disabled = true;
+      cameraToggleBtn.textContent = 'Ładowanie...';
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          currentStream = stream;
+          video.srcObject = stream;
+          video.play();
+          video.addEventListener('loadeddata', () => {
+              overlay.width = video.videoWidth;
+              overlay.height = video.videoHeight;
+              runDetectionLoop();
+          });
+          isCameraOn = true;
+          cameraToggleBtn.textContent = 'Stop kamera';
+          cameraToggleBtn.disabled = false;
+          symbolSection.classList.remove('hidden');
+        }).catch(err => {
+            showToast(`Błąd kamery: ${err.message}`, 'error');
+            cameraToggleBtn.textContent = 'Start kamera';
+            cameraToggleBtn.disabled = false;
         });
     }
 
-// --- NOWA LOGIKA TABELI I PAGINACJI ---
-
-function renderTable() {
-    historyTableBody.innerHTML = ''; // Wyczyść starą zawartość
-
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const pageItems = fullTimeline.slice(startIndex, endIndex);
-
-    pageItems.forEach((event, index) => {
-        const lp = startIndex + index + 1;
-        const date = new Date(event.timestamp).toLocaleString('pl-PL');
-
-        let type, shape, correction;
-
-        if (event.type === 'sample') {
-            type = event.source === 'manual' ? 'Dodanie próbki' : 'Korekta (nauka)';
-            shape = event.symbol;
-            correction = '---';
-        } else { // prediction
-            type = 'Zgadywanie';
-            shape = event.predictedSymbol;
-            if (event.wasCorrect) {
-                correction = '✅ Poprawne';
-            } else {
-                correction = `❌ Błędne (był to: ${event.correctSymbol})`;
-            }
-        }
-
-        const row = `
-            <tr>
-                <td>${lp}</td>
-                <td>${date}</td>
-                <td>${type}</td>
-                <td>${shape}</td>
-                <td>${correction}</td>
-            </tr>
-        `;
-        historyTableBody.innerHTML += row;
-    });
-
-    updatePaginationControls();
-}
-
-function updatePaginationControls() {
-    const totalPages = Math.ceil(fullTimeline.length / ITEMS_PER_PAGE);
-    pageInfoEl.textContent = `Strona ${currentPage} / ${totalPages || 1}`;
-
-    prevPageBtn.disabled = currentPage === 1;
-    nextPageBtn.disabled = currentPage === totalPages;
-}
-
-prevPageBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderTable();
-    }
-});
-
-nextPageBtn.addEventListener('click', () => {
-    const totalPages = Math.ceil(fullTimeline.length / ITEMS_PER_PAGE);
-    if (currentPage < totalPages) {
-        currentPage++;
-        renderTable();
-    }
-});
-
-    // Nasłuchuj na kliknięcia w nagłówek tabeli
-document.querySelector('.history-table thead').addEventListener('click', (e) => {
-    const header = e.target.closest('th');
-    if (!header || !header.classList.contains('sortable')) return;
-
-    const sortColumn = header.dataset.sort;
-
-    if (currentSort.column === sortColumn) {
-        // Jeśli kliknięto tę samą kolumnę, odwróć kierunek
-        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-        // Jeśli nowa kolumna, ustaw domyślny kierunek
-        currentSort.column = sortColumn;
-        currentSort.direction = 'asc';
+    function stopCamera() {
+      if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+      overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+      isCameraOn = false;
+      cameraToggleBtn.textContent = 'Start kamera';
+      cameraToggleBtn.disabled = false;
+      symbolSection.classList.add('hidden');
+      classButtons.forEach(btn => btn.disabled = true);
+      predictBtn.disabled = true;
     }
 
-    currentPage = 1; // Zresetuj paginację
-    sortTimeline();
-    renderTable();
-});
-
-function sortTimeline() {
-    const { column, direction } = currentSort;
-    const dir = direction === 'asc' ? 1 : -1;
-
-    fullTimeline.sort((a, b) => {
-        let valA, valB;
-
-        // Mapowanie kolumn na dane
-        if (column === 'lp') {
-            valA = fullTimeline.indexOf(a);
-            valB = fullTimeline.indexOf(b);
-        } else if (column === 'timestamp') {
-            valA = a.timestamp;
-            valB = b.timestamp;
-        } else if (column === 'type') {
-            valA = a.type;
-            valB = b.type;
-        } else if (column === 'shape') {
-            valA = a.symbol || a.predictedSymbol;
-            valB = b.symbol || b.predictedSymbol;
-        }
-
-        if (valA < valB) return -1 * dir;
-        if (valA > valB) return 1 * dir;
-        return 0;
-    });
-
-    updateSortIndicators();
-}
-
-function updateSortIndicators() {
-    document.querySelectorAll('.history-table th.sortable').forEach(th => {
-        // Usuń istniejące strzałki
-        const existingArrow = th.querySelector('.sort-arrow');
-        if (existingArrow) existingArrow.remove();
-
-        // Dodaj strzałkę do aktywnej kolumny
-        if (th.dataset.sort === currentSort.column) {
-            const arrow = document.createElement('span');
-            arrow.className = 'sort-arrow';
-            arrow.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
-            th.appendChild(arrow);
-        }
-    });
-}
-
+    function clearFeedbackUI() { feedbackContainer.innerHTML = ''; }
     
+    function resetPredictionUI() {
+        clearFeedbackUI();
+        predictionEl.textContent = '';
+        if (lastDetectedFace) {
+            predictBtn.disabled = false;
+            classButtons.forEach(btn => btn.disabled = false);
+        }
+    }
+
+    function handleCorrectPrediction(predictedSymbol) {
+        logPredictionAttempt(predictedSymbol, true);
+        predictionEl.textContent = 'Dziękuję za potwierdzenie!';
+        setTimeout(resetPredictionUI, 2000);
+    }
+
+    async function handleIncorrectPrediction(predictedSymbol, correctSymbol, logits) {
+        logPredictionAttempt(predictedSymbol, false, correctSymbol);
+        classifier.addExample(logits, correctSymbol);
+        await logTrainingSample(correctSymbol, 'correction', logits);
+        updateStatus();
+        predictionEl.textContent = `Dziękuję! Zapamiętam, że to był ${correctSymbol}.`;
+        setTimeout(resetPredictionUI, 2000);
+    }
+
+    function showCorrectionUI(predictedSymbol, logits) {
+        clearFeedbackUI();
+        feedbackContainer.innerHTML = `
+            <p class="feedback-prompt">W takim razie, co to było?</p>
+            <div class="feedback-actions">
+                ${classNames.map(name => `<button data-correct-symbol="${name}">${name}</button>`).join('')}
+            </div>
+        `;
+        document.querySelectorAll('[data-correct-symbol]').forEach(btn => {
+            btn.onclick = () => { handleIncorrectPrediction(predictedSymbol, btn.dataset.correctSymbol, logits); };
+        });
+    }
+
+    function showFeedbackUI(result, logits) {
+        feedbackContainer.innerHTML = `
+            <p class="feedback-prompt">Czy to poprawna odpowiedź?</p>
+            <div class="feedback-actions">
+                <button id="yesBtn">✅ Tak</button>
+                <button id="noBtn">❌ Nie</button>
+            </div>
+        `;
+        document.getElementById('yesBtn').onclick = () => handleCorrectPrediction(result.label);
+        document.getElementById('noBtn').onclick = () => showCorrectionUI(result.label, logits);
+    }
+
+    async function takeSnapshot(label) {
+      if (!net || !classifier || !lastDetectedFace) { showToast("Najpierw pokaż twarz do kamery!", 'info'); return; }
+      const faceBox = lastDetectedFace;
+      const cropStartX = faceBox.topLeft[0];
+      const cropStartY = faceBox.bottomRight[1];
+      const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
+      const cropHeight = cropWidth;
+      const ctx = canvas.getContext('2d');
+      canvas.width = 150; canvas.height = 150;
+      ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
+      
+      const galleryInfo = gallery.querySelector('.gallery-info');
+      if (galleryInfo) { gallery.innerHTML = ''; }
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      gallery.appendChild(img);
+      
+      const logits = net.infer(canvas, true);
+      classifier.addExample(logits, label);
+      updateStatus();
+      await logTrainingSample(label, 'manual', logits);
+    }
+
+    async function predict() {
+      if (!net || !classifier || !lastDetectedFace) return;
+      if (classifier.getNumClasses() < classNames.length) { showToast(`Najpierw dodaj próbki dla wszystkich ${classNames.length} symboli!`, 'info'); return; }
+      predictBtn.disabled = true;
+      classButtons.forEach(btn => btn.disabled = true);
+      const faceBox = lastDetectedFace;
+      const cropStartX = faceBox.topLeft[0];
+      const cropStartY = faceBox.bottomRight[1];
+      const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
+      const cropHeight = cropWidth;
+      const ctx = canvas.getContext('2d');
+      canvas.width = 150; canvas.height = 150;
+      ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
+      const logits = net.infer(canvas, true);
+      const result = await classifier.predictClass(logits);
+      predictionEl.textContent = `Model zgaduje: ${result.label} (pewność ${(result.confidences[result.label] * 100).toFixed(1)}%)`;
+      showFeedbackUI(result, logits);
+    }
+
+    function updateStatus() {
+      if (classifier) {
+        const counts = classifier.getClassExampleCount();
+        statusEl.textContent = classNames.map(name => `${name}: ${counts[name] || 0}`).join(' | ');
+      }
+    }
+
+    async function loadModelFromFirebase() {
+      if (!currentUser || !classifier) return;
+      classifier.clearAllClasses();
+      gallery.innerHTML = "";
+      const samplesPath = `training_samples/${currentUser.uid}`;
+      const snapshot = await database.ref(samplesPath).once('value');
+      const allSamples = snapshot.val();
+      if (allSamples) {
+        statusEl.textContent = 'Odtwarzanie modelu z zapisanych próbek...';
+        let processedCount = 0;
+        for (const key of Object.keys(allSamples)) {
+            const sample = allSamples[key];
+            if (sample.tensor) {
+                const tensor = tf.tensor2d(sample.tensor, [1, 1024]);
+                classifier.addExample(tensor, sample.symbol);
+                processedCount++;
+            }
+        }
+        gallery.innerHTML = `<p class="gallery-info">Model wczytany z ${processedCount} próbek. Galeria jest pusta, ponieważ obrazki nie są zapisywane.</p>`;
+      }
+      updateStatus();
+    }
+    
+    async function clearData() {
+        if (!confirm("Czy na pewno chcesz usunąć wszystkie zebrane próbki?")) return;
+        try {
+          if (currentUser) {
+            await database.ref(`training_samples/${currentUser.uid}`).remove();
+            await database.ref(`prediction_attempts/${currentUser.uid}`).remove();
+          }
+          if (classifier) classifier.clearAllClasses();
+          gallery.innerHTML = "";
+          predictionEl.textContent = "Wyczyszczono dane.";
+          updateStatus();
+        } catch (error) { console.error("Błąd podczas czyszczenia danych:", error); }
+    }
+
+    function logTrainingSample(symbol, source, logits) {
+        if (!currentUser || !logits) return;
+        database.ref(`training_samples/${currentUser.uid}`).push({
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            symbol: symbol,
+            source: source,
+            tensor: tensorToJSON(logits)
+        });
+    }
+
+    function logPredictionAttempt(predictedSymbol, wasCorrect, correctSymbol = null) {
+        if (!currentUser) return;
+        const attemptData = {
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            predictedSymbol: predictedSymbol,
+            wasCorrect: wasCorrect
+        };
+        if (!wasCorrect && correctSymbol) { attemptData.correctSymbol = correctSymbol; }
+        database.ref(`prediction_attempts/${currentUser.uid}`).push(attemptData);
+    }
+    
+    function showToast(message, type = 'info', duration = 3000) {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.5s forwards';
+            toast.addEventListener('animationend', () => toast.remove());
+        }, duration);
+    }
+
+    function handleLoggedOutState() {
+      currentUser = null;
+      stopCamera();
+      authContainer.innerHTML = '<button id="login-btn" class="btn-primary">Zaloguj jako Gość</button>';
+      statusEl.textContent = "Zaloguj się, aby rozpocząć.";
+      predictionEl.textContent = ""; gallery.innerHTML = "";
+      clearBtn.disabled = true;
+      if(classifier) classifier.clearAllClasses();
+      document.getElementById('login-btn').addEventListener('click', () => { firebase.auth().signInAnonymously(); });
+    }
+
+    async function handleLoggedInState(user) {
+      currentUser = user;
+      authContainer.innerHTML = `<span class="welcome-message">Witaj, Gościu! (${user.uid.substring(0,6)})</span><button id="logout-btn">Wyloguj</button>`;
+      document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+      clearBtn.disabled = false;
+      statusEl.textContent = "Wczytywanie zapisanego modelu...";
+      await loadModelFromFirebase();
+    }
+
+    async function main() {
+      if (await loadModels()) {
+        loader.classList.add('fade-out');
+        contentWrapper.classList.remove('content-hidden');
+        loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
+        statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) { handleLoggedInState(user); } else { handleLoggedOutState(); }
+        });
+      }
+    }
+
+    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
+    clearBtn.addEventListener('click', clearData);
+    classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
+    predictBtn.addEventListener('click', predict);
+    
+    main();
 });
