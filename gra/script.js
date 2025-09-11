@@ -1,281 +1,130 @@
-'use strict';
+// === Konfiguracja Firebase (wstaw swoje dane!) ===
+const firebaseConfig = {
+        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+        authDomain: "guess-game-35a3b.firebaseapp.com",
+        databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "guess-game-35a3b",
+        storageBucket: "guess-game-35a3b.appspot.com",
+        messagingSenderId: "1083984624029",
+        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('KROK 1: Strona załadowana (DOMContentLoaded). Skrypt startuje.');
+// === Pobieranie elementów DOM ===
+const gameContainer = document.getElementById('game-container');
+const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
+const video = document.getElementById('camera-feed');
+const predictionText = document.getElementById('prediction');
+const btnAddExample0 = document.getElementById('add-example-0');
+const btnAddExample1 = document.getElementById('add-example-1');
+const btnAddExample2 = document.getElementById('add-example-2');
+const btnGuess = document.getElementById('guess-btn');
 
-    // === POBIERANIE ELEMENTÓW DOM ===
-    const loader = document.getElementById('loader');
-    const loaderStatus = document.getElementById('loader-status');
-    const contentWrapper = document.querySelector('.content-wrapper');
-    const authContainer = document.getElementById('auth-container');
-    const cameraToggleBtn = document.getElementById('camera-toggle-btn');
-    const symbolSection = document.querySelector('.symbol-section');
-    const classButtons = document.querySelectorAll('.classes button');
-    const predictBtn = document.getElementById('predictBtn');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const gallery = document.getElementById('gallery');
-    const statusEl = document.getElementById('status');
-    const predictionEl = document.getElementById('prediction');
-    const clearBtn = document.getElementById('clearBtn');
-    const overlay = document.getElementById('overlay');
-    const overlayCtx = overlay.getContext('2d');
-    const feedbackContainer = document.getElementById('feedback-container');
+let classifier;
+let mobilenetModel;
+let videoStream; // Zmienna do przechowywania strumienia kamery
+const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
-    let currentUser = null;
-    let currentStream = null;
-    let classifier;
-    let net;
-    const classNames = ["KOŁO", "KWADRAT", "TRÓJKĄT"];
-    let blazeFaceModel;
-    let detectionIntervalId = null;
-    let lastDetectedFace = null;
-    let isCameraOn = false;
+// === Logika detekcji twarzy ===
+const MODEL_URL = './models';
+let faceApiInterval;
 
-    // === FUNKCJE AI i KAMERY ===
-    const tensorToJSON = (tensor) => Array.from(tensor.dataSync());
+Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+]).then(setupApp);
 
-    async function loadModels() {
-      console.log('KROK 3: Rozpoczynam ładowanie modeli AI...');
-      loaderStatus.textContent = "Ładowanie modeli AI...";
-      try {
-        const mobilenetPromise = mobilenet.load();
-        const blazefacePromise = blazeface.load();
-
-        console.log('KROK 3a: Oczekuję na załadowanie MobileNet...');
-        net = await mobilenetPromise;
-        console.log('KROK 3b: MobileNet załadowany.');
-
-        console.log('KROK 3c: Oczekuję na załadowanie BlazeFace...');
-        blazeFaceModel = await blazefacePromise;
-        console.log('KROK 3d: BlazeFace załadowany.');
-
-        classifier = knnClassifier.create();
-        console.log('KROK 4: Wszystkie modele AI załadowane pomyślnie.');
-        return true;
-      } catch (e) {
-        loaderStatus.textContent = "Błąd krytyczny ładowania modeli AI.";
-        console.error("Błąd ładowania modeli:", e);
-        return false;
-      }
-    }
-
-    // Pozostałe funkcje (runDetectionLoop, startCamera, etc.) bez zmian
-    async function runDetectionLoop() {
-        if (isCameraOn && blazeFaceModel && !video.paused && !video.ended) {
-            const faces = await blazeFaceModel.estimateFaces(video, false);
-            overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-            
-            if (faces.length > 0) {
-                lastDetectedFace = faces[0];
-                const start = lastDetectedFace.topLeft;
-                const end = lastDetectedFace.bottomRight;
-                const size = [end[0] - start[0], end[1] - start[1]];
-                overlayCtx.strokeStyle = '#c2185b';
-                overlayCtx.lineWidth = 4;
-                overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
-                
-                if (feedbackContainer.innerHTML === '') {
-                    classButtons.forEach(btn => btn.disabled = false);
-                    predictBtn.disabled = false;
-                }
-            } else {
-                lastDetectedFace = null;
-                classButtons.forEach(btn => btn.disabled = true);
-                predictBtn.disabled = true;
-            }
-            detectionIntervalId = setTimeout(runDetectionLoop, 200);
-        }
-    }
-
-    function startCamera() {
-      cameraToggleBtn.disabled = true;
-      cameraToggleBtn.textContent = 'Ładowanie...';
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          currentStream = stream;
-          video.srcObject = stream;
-          video.play();
-          video.addEventListener('loadeddata', () => {
-              overlay.width = video.videoWidth;
-              overlay.height = video.videoHeight;
-              runDetectionLoop();
-          });
-          isCameraOn = true;
-          cameraToggleBtn.textContent = 'Stop kamera';
-          cameraToggleBtn.disabled = false;
-          symbolSection.classList.remove('hidden');
-        }).catch(err => {
-            showToast(`Błąd kamery: ${err.message}`, 'error');
-            cameraToggleBtn.textContent = 'Start kamera';
-            cameraToggleBtn.disabled = false;
-        });
-    }
-
-    function stopCamera() {
-      if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
-      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
-      overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-      isCameraOn = false;
-      cameraToggleBtn.textContent = 'Start kamera';
-      cameraToggleBtn.disabled = false;
-      symbolSection.classList.add('hidden');
-      classButtons.forEach(btn => btn.disabled = true);
-      predictBtn.disabled = true;
-    }
-
-    function clearFeedbackUI() { feedbackContainer.innerHTML = ''; }
-    
-    function resetPredictionUI() {
-        clearFeedbackUI();
-        predictionEl.textContent = '';
-        if (lastDetectedFace) {
-            predictBtn.disabled = false;
-            classButtons.forEach(btn => btn.disabled = false);
-        }
-    }
-
-    function handleCorrectPrediction(predictedSymbol) {
-        logPredictionAttempt(predictedSymbol, true);
-        predictionEl.textContent = 'Dziękuję za potwierdzenie!';
-        setTimeout(resetPredictionUI, 2000);
-    }
-
-    async function handleIncorrectPrediction(predictedSymbol, correctSymbol, logits) {
-        logPredictionAttempt(predictedSymbol, false, correctSymbol);
-        classifier.addExample(logits, correctSymbol);
-        await logTrainingSample(correctSymbol, 'correction', logits);
-        updateStatus();
-        predictionEl.textContent = `Dziękuję! Zapamiętam, że to był ${correctSymbol}.`;
-        setTimeout(resetPredictionUI, 2000);
-    }
-
-    function showCorrectionUI(predictedSymbol, logits) {
-        clearFeedbackUI();
-        feedbackContainer.innerHTML = `
-            <p class="feedback-prompt">W takim razie, co to było?</p>
-            <div class="feedback-actions">
-                ${classNames.map(name => `<button data-correct-symbol="${name}">${name}</button>`).join('')}
-            </div>
-        `;
-        document.querySelectorAll('[data-correct-symbol]').forEach(btn => {
-            btn.onclick = () => { handleIncorrectPrediction(predictedSymbol, btn.dataset.correctSymbol, logits); };
-        });
-    }
-
-    function showFeedbackUI(result, logits) {
-        feedbackContainer.innerHTML = `
-            <p class="feedback-prompt">Czy to poprawna odpowiedź?</p>
-            <div class="feedback-actions">
-                <button id="yesBtn">✅ Tak</button>
-                <button id="noBtn">❌ Nie</button>
-            </div>
-        `;
-        document.getElementById('yesBtn').onclick = () => handleCorrectPrediction(result.label);
-        document.getElementById('noBtn').onclick = () => showCorrectionUI(result.label, logits);
-    }
-
-    async function takeSnapshot(label) {
-      if (!net || !classifier || !lastDetectedFace) { showToast("Najpierw pokaż twarz do kamery!", 'info'); return; }
-      const faceBox = lastDetectedFace;
-      const cropStartX = faceBox.topLeft[0];
-      const cropStartY = faceBox.bottomRight[1];
-      const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
-      const cropHeight = cropWidth; 
-      
-      const ctx = canvas.getContext('2d');
-      canvas.width = 150;
-      canvas.height = 150;
-      ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
-      
-      const galleryInfo = gallery.querySelector('.gallery-info');
-      if (galleryInfo) { gallery.innerHTML = ''; }
-      const img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
-      gallery.appendChild(img);
-      
-      const logits = net.infer(canvas, true);
-      classifier.addExample(logits, label);
-      updateStatus();
-      await logTrainingSample(label, 'manual', logits);
-    }
-
-    async function predict() {
-      if (!net || !classifier || !lastDetectedFace) return;
-      if (classifier.getNumClasses() < classNames.length) { showToast(`Najpierw dodaj próbki dla wszystkich ${classNames.length} symboli!`, 'info'); return; }
-      predictBtn.disabled = true;
-      classButtons.forEach(btn => btn.disabled = true);
-      
-      const faceBox = lastDetectedFace;
-      const cropStartX = faceBox.topLeft[0];
-      const cropStartY = faceBox.bottomRight[1];
-      const cropWidth = (faceBox.bottomRight[0] - faceBox.topLeft[0]);
-      const cropHeight = cropWidth;
-      
-      const ctx = canvas.getContext('2d');
-      canvas.width = 150;
-      canvas.height = 150;
-      ctx.drawImage(video, cropStartX, cropStartY, cropWidth, cropHeight, 0, 0, 150, 150);
-      
-      const logits = net.infer(canvas, true);
-      const result = await classifier.predictClass(logits);
-      predictionEl.textContent = `Model zgaduje: ${result.label} (pewność ${(result.confidences[result.label] * 100).toFixed(1)}%)`;
-      showFeedbackUI(result, logits);
-    }
-
-    function updateStatus() {
-      if (classifier) {
-        const counts = classifier.getClassExampleCount();
-        statusEl.textContent = classNames.map(name => `${name}: ${counts[name] || 0}`).join(' | ');
-      }
-    }
-
-    async function loadModelFromFirebase() {
-        // ... (kod bez zmian)
-    }
-    
-    async function clearData() {
-        // ... (kod bez zmian)
-    }
-
-    function logTrainingSample(symbol, source, logits) {
-        // ... (kod bez zmian)
-    }
-
-    function logPredictionAttempt(predictedSymbol, wasCorrect, correctSymbol = null) {
-        // ... (kod bez zmian)
-    }
-    
-    function showToast(message, type = 'info', duration = 3000) {
-        // ... (kod bez zmian)
-    }
-
-    function handleLoggedOutState() {
-        // ... (kod bez zmian)
-    }
-
-    async function handleLoggedInState(user) {
-        // ... (kod bez zmian)
-    }
-
-    async function main() {
-        console.log('KROK 2: Wywołano funkcję main().');
-        if (await loadModels()) {
-            console.log('KROK 5: Inicjalizacja zakończona, ukrywam loader.');
-            loader.classList.add('fade-out');
-            contentWrapper.classList.remove('content-hidden');
-            loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
-            statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
-            firebase.auth().onAuthStateChanged(user => {
-                if (user) { handleLoggedInState(user); } else { handleLoggedOutState(); }
+function startVideo() {
+    return new Promise((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+                video.addEventListener('play', resolve);
+            })
+            .catch(err => {
+                console.error("Błąd dostępu do kamery:", err);
+                reject(err);
             });
-        }
-    }
+    });
+}
 
-    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
-    clearBtn.addEventListener('click', clearData);
-    classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
-    predictBtn.addEventListener('click', predict);
-    
-    main();
-});
+function stopVideo() {
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+    }
+    video.srcObject = null;
+    videoStream = null;
+    clearInterval(faceApiInterval);
+    const canvas = document.querySelector('.game-container-main canvas');
+    if (canvas) {
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+// === Logika klasyfikacji gestów ===
+async function initKNN() {
+    predictionText.innerText = "Ładowanie modelu gestów...";
+    try {
+        classifier = knnClassifier.create();
+        mobilenetModel = await mobilenet.load();
+        await loadModel();
+    } catch (error) {
+        console.error("Błąd ładowania modelu gestów:", error);
+        predictionText.innerText = "Błąd ładowania modeli AI!";
+    }
+}
+
+function addExample(classId) {
+    if (!mobilenetModel) return;
+    const features = mobilenetModel.infer(video, true);
+    classifier.addExample(features, classId);
+    predictionText.innerText = `Dodano przykład dla: ${CLASS_NAMES[classId]}`;
+    saveModel();
+}
+
+async function guess() {
+    if (classifier.getNumClasses() > 0) {
+        const features = mobilenetModel.infer(video, true);
+        const result = await classifier.predictClass(features);
+        const confidence = Math.round(result.confidences[result.label] * 100);
+        predictionText.innerText = `To jest: ${CLASS_NAMES[result.label]} (pewność: ${confidence}%)`;
+    } else {
+        predictionText.innerText = 'Najpierw naucz mnie czegoś!';
+    }
+}
+
+function saveModel() { /* ... bez zmian */ }
+async function loadModel() { /* ... bez zmian */ }
+
+// === Główna konfiguracja aplikacji ===
+function setupApp() {
+    startBtn.addEventListener('click', async () => {
+        gameContainer.classList.add('game-active');
+        await startVideo();
+        
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.querySelector('.game-container-main').append(canvas);
+        const displaySize = { width: video.clientWidth, height: video.clientHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        faceApiInterval = setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+        }, 100);
+
+        initKNN();
+    });
+
+    stopBtn.addEventListener('click', () => {
+        stopVideo();
+        gameContainer.classList.remove('game-active');
+    });
+
+    // Wklej tutaj pełną zawartość funkcji saveModel i loadModel
+}
