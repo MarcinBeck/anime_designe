@@ -11,21 +11,18 @@
 </head>
 <body>
     <header class="main-header">
-        <div class="container header-container">
-            <div class="header-left">
-                <a href="../index.html" class="logo-link">
-                    <img class="logo-img" src="../img/logo.png" alt="Logo" />
-                </a>
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="../index.html#gallery">Galeria</a></li>
-                        <li><a href="../desktop-3.html">Kontakt</a></li>
-                        <li><a href="index.html">Gra</a></li>
-                        <li><a href="../statystyki.html">Statystyki</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div id="auth-container" class="auth-container"></div>
+        <div class="container">
+            <a href="../index.html" class="logo-link">
+                <img class="logo-img" src="../img/logo.png" alt="Logo" />
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../index.html#gallery">Galeria</a></li>
+                    <li><a href="../desktop-3.html">Kontakt</a></li>
+                    <li><a href="index.html">Gra</a></li>
+                    <li><a href="../statystyki.html">Statystyki</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
 
@@ -40,38 +37,29 @@
                 <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
             </div>
-            
-            <div class="controls-overlay">
-                <div class="top-controls">
-                    <button id="stop-btn" class="btn-stop hidden">✕</button>
+            <div class="controls">
+                <div id="auth-container"></div>
+                <button id="camera-toggle-btn">Start kamera</button>
+            </div>
+            <div class="symbol-section hidden">
+                <div class="status" id="status"></div>
+                <div class="classes">
+                    <button data-class="KOŁO" disabled>Dodaj KOŁO</button>
+                    <button data-class="KWADRAT" disabled>Dodaj KWADRAT</button>
+                    <button data-class="TRÓJKĄT" disabled>Dodaj TRÓJKĄT</button>
                 </div>
-                <div id="symbol-section" class="symbol-section hidden">
-                    <div class="status" id="status"></div>
+                <button id="predictBtn" class="btn-primary" disabled>Zgadnij symbol</button>
+                <div id="prediction-area">
                     <div class="prediction" id="prediction"></div>
                     <div class="feedback" id="feedback-container"></div>
-                    <div class="buttons-control-line">
-                        <button id="predictBtn" class="btn-primary" disabled>Zgadnij symbol</button>
-                        <span class="add-label">Dodaj:</span>
-                        <div class="classes">
-                            <button data-class="KOŁO" disabled>KOŁO</button>
-                            <button data-class="KWADRAT" disabled>KWADRAT</button>
-                            <button data-class="TRÓJKĄT" disabled>TRÓJKĄT</button>
-                        </div>
+                </div>
+                <div class="gallery-container">
+                    <div class="gallery-header">
+                        <h2>Zebrane próbki:</h2>
+                        <button id="clearBtn" class="clear-button" disabled>Wyczyść dane</button>
                     </div>
+                    <div class="gallery" id="gallery"></div>
                 </div>
-            </div>
-
-            <div class="start-game-controls">
-                <div id="auth-container-start"></div>
-                <button id="camera-toggle-btn">Start Kamera</button>
-            </div>
-
-            <div class="gallery-container hidden">
-                <div class="gallery-header">
-                    <h2>Zebrane próbki:</h2>
-                    <button id="clearBtn" class="clear-button" disabled>Wyczyść dane</button>
-                </div>
-                <div class="gallery" id="gallery"></div>
             </div>
         </div>
     </main>
