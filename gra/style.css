@@ -4,7 +4,6 @@
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
-    --color-stop-red: #d32f2f;
     --color-success: #2e7d32;
 }
 
@@ -68,26 +67,26 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     display: none;
 }
 
-/* Layout gry po starcie */
+/* Uproszczony layout gry */
 #game-layout {
-    display: none; /* Ukryty na początku */
+    display: none;
     width: 100%;
-    max-width: 800px;
+    max-width: 720px;
     flex-direction: column;
     align-items: center;
     gap: 2rem;
 }
 #game-container.game-active #game-layout {
-    display: flex; /* Pokazany po starcie */
+    display: flex;
 }
 
-/* Kontener wideo i "szyby" do rysowania */
 .video-container {
     position: relative;
     width: 100%;
     background-color: #222;
     border-radius: 8px;
     overflow: hidden;
+    line-height: 0; /* Usuwa dodatkową przestrzeń pod wideo */
 }
 #camera-feed, #overlay-canvas {
     width: 100%;
@@ -100,10 +99,9 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     left: 0;
 }
 
-/* Panel z kontrolkami */
 .controls-panel {
     width: 100%;
-    background: var(--color-light);
+    background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 2rem;
@@ -112,73 +110,32 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
     gap: 1.5rem;
 }
-.controls-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 3rem;
-    width: 100%;
-}
-.learning-module, .prediction-module, .stats-module { text-align: center; }
-.learning-module p, .prediction-module p, .stats-module p { font-size: 1.4rem; color: #888; margin-bottom: 1rem; text-transform: uppercase; }
-.buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .prediction-output {
     color: var(--color-primary);
-    font-size: 2rem;
-    font-weight: 700;
-    min-height: 2.8rem;
-    margin-top: 1rem;
-}
-.stats-info {
-    color: var(--color-dark);
-    font-size: 3rem;
-    font-weight: 700;
-}
-
-/* Przycisk STOP */
-#stop-btn {
-    position: absolute;
-    top: 100px;
-    right: 2rem;
-    z-index: 15;
-    width: 50px;
-    height: 50px;
-    padding: 0;
     font-size: 2.4rem;
-    line-height: 1;
-    border-radius: 50%;
-    display: none;
+    font-weight: 700;
+    min-height: 3rem;
 }
-#game-container.game-active #stop-btn {
+.buttons-group {
     display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
 }
-
-
-/* Modal bez zmian */
-.feedback-modal { /* ... */ }
-
-/* Przyciski */
 .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
     padding: 1rem 2.8rem;
     border-radius: 8px;
     border: 2px solid #ccc;
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
-    background-color: var(--color-light);
-    color: var(--color-text);
+    background-color: #fff;
+    color: #333;
     transition: all 0.2s ease;
 }
-.btn:hover { background-color: #eee; }
+.btn:hover { background-color: #eee; border-color: #aaa; }
 .btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
-.btn-large:hover { background-color: var(--color-primary); color: var(--color-light); }
-.btn-primary { background-color: var(--color-success); border-color: var(--color-success); color: var(--color-light); }
+.btn-large:hover { background-color: var(--color-primary); color: #fff; }
+.btn-primary { background-color: var(--color-success); border-color: var(--color-success); color: #fff; }
 .btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
-.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); color: var(--color-light); }
-.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
