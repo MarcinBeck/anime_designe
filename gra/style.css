@@ -3,12 +3,12 @@ html { font-size: 62.5%; }
 body {
     font-family: 'Open Sans', sans-serif;
     font-size: 1.6rem;
+    line-height: 1.7;
     color: #333;
-    background-color: #222;
+    background-color: #f5f5f5;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
 .main-header {
@@ -24,67 +24,59 @@ body {
 .main-nav ul { list-style: none; display: flex; gap: 3rem; }
 .main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: #c2185b; }
 
+/* --- Style specyficzne dla gry --- */
 .game-container-main {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+#loader { text-align: center; }
+.content-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2rem; width: 100%; max-width: 900px;}
+.content-hidden { display: none; }
+
+.video-container {
     position: relative;
+    width: 100%;
+    max-width: 640px;
+    border-radius: 8px;
     overflow: hidden;
 }
-#camera-feed {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    z-index: 0;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1);
+#video { width: 100%; display: block; }
+#overlay { position: absolute; top: 0; left: 0; }
+
+.controls, .classes, .feedback-actions, .gallery-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
 }
-/* Styl dla canvasa tworzonego przez face-api.js */
-.game-container-main canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 5;
-}
-.controls-panel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 2rem;
+.symbol-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    z-index: 10;
-}
-.prediction-output {
-    color: #fff;
-    font-size: 2.4rem;
-    font-weight: 700;
-    min-height: 3rem;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-.buttons-group {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.btn {
-    display: inline-block;
-    padding: 1rem 2.8rem;
+    padding: 2rem;
+    background: #fff;
     border-radius: 8px;
-    border: 2px solid #fff;
-    font-size: 1.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    background-color: transparent;
-    color: #fff;
-    transition: all 0.2s ease;
+    width: 100%;
 }
-.btn:hover { background-color: #fff; color: #222; }
-.btn-primary { background-color: #2e7d32; border-color: #2e7d32; }
-.btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; color: #fff; }
+.hidden { display: none !important; }
+
+.status { font-weight: bold; }
+.prediction { font-size: 2.2rem; font-weight: bold; color: #c2185b; min-height: 3rem; }
+#prediction-area { text-align: center; }
+
+.gallery-container { width: 100%; margin-top: 2rem; }
+.gallery { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;}
+.gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; }
+.gallery-info { color: #888; }
+.clear-button { background: #fbe9e7; color: #c62828; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+
+#toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+.toast { padding: 1.5rem; border-radius: 8px; color: #fff; margin-bottom: 1rem; animation: slideIn 0.5s forwards; }
+.toast.info { background-color: #0277bd; }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes slideOut { to { transform: translateX(110%); } }
