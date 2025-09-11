@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI - Rozpoznawanie Symboli</title>
-    <link rel="stylesheet" href="style.css?v=stable">
+    <title>Gra AI - Rozpoznawanie Gestów</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header class="main-header">
@@ -30,12 +33,12 @@
         </div>
 
         <div class="content-wrapper content-hidden">
-            <div id="auth-container"></div>
             <div class="video-container">
-                <video id="video" autoplay playsinline></video>
+                <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
             </div>
             <div class="controls">
+                <div id="auth-container"></div>
                 <button id="camera-toggle-btn">Start kamera</button>
             </div>
             <div class="symbol-section hidden">
@@ -71,10 +74,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
-
+    
     <script>
       var firebaseConfig = {
--        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
+        apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
         authDomain: "guess-game-35a3b.firebaseapp.com",
         databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "guess-game-35a3b",
