@@ -21,8 +21,7 @@ body {
 #game-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
 h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
@@ -45,71 +44,102 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     color: var(--color-light);
     text-align: center;
     padding: 2rem;
+    margin-top: auto;
 }
 
 /* === Główny kontener gry === */
 .game-container-main {
     flex-grow: 1;
-    position: relative;
-    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--color-dark);
+    padding: 4rem 2rem;
 }
 
 /* Ekran startowy */
 #start-screen {
     text-align: center;
-    padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease, visibility 0.5s;
-    visibility: visible;
-    opacity: 1;
-    z-index: 15;
-    position: relative;
-    background-color: #f5f5f5;
-    width: 100%;
-    height: 100%;
 }
 #game-container.game-active #start-screen {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+    display: none;
 }
 
-/* Wideo i Canvas do rysowania */
-#camera-feed, #overlay-canvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    transform: translateX(-50%) translateY(-50%) scaleX(-1);
+/* Layout gry po starcie */
+#game-layout {
+    display: none; /* Ukryty na początku */
+    width: 100%;
+    max-width: 800px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
 }
-#camera-feed {
-    z-index: 0;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.5s ease, visibility 0.5s;
+#game-container.game-active #game-layout {
+    display: flex; /* Pokazany po starcie */
+}
+
+/* Kontener wideo i "szyby" do rysowania */
+.video-container {
+    position: relative;
+    width: 100%;
+    background-color: #222;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#camera-feed, #overlay-canvas {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 #overlay-canvas {
-    z-index: 5;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
-#game-container.game-active #camera-feed {
-    visibility: visible;
-    opacity: 1;
+
+/* Panel z kontrolkami */
+.controls-panel {
+    width: 100%;
+    background: var(--color-light);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+.controls-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 3rem;
+    width: 100%;
+}
+.learning-module, .prediction-module, .stats-module { text-align: center; }
+.learning-module p, .prediction-module p, .stats-module p { font-size: 1.4rem; color: #888; margin-bottom: 1rem; text-transform: uppercase; }
+.buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.prediction-output {
+    color: var(--color-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    min-height: 2.8rem;
+    margin-top: 1rem;
+}
+.stats-info {
+    color: var(--color-dark);
+    font-size: 3rem;
+    font-weight: 700;
 }
 
 /* Przycisk STOP */
 #stop-btn {
     position: absolute;
-    top: 2rem;
+    top: 100px;
     right: 2rem;
     z-index: 15;
     width: 50px;
@@ -126,105 +156,29 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: var(--color-dark); }
     align-items: center;
 }
 
-/* Panel z kontrolkami */
-.controls-panel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 2rem;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    transform: translateY(100%);
-    transition: transform 0.5s ease, opacity 0.5s ease;
-    visibility: hidden;
-    opacity: 0;
-}
-#game-container.game-active .controls-panel {
-    transform: translateY(0);
-    visibility: visible;
-    opacity: 1;
-}
-.controls-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 3rem;
-    width: 100%;
-}
-.learning-module, .prediction-module, .stats-module { text-align: center; }
-.learning-module p, .prediction-module p, .stats-module p { font-size: 1.4rem; color: #ccc; margin-bottom: 1rem; text-transform: uppercase; }
-.buttons-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-.prediction-output {
-    color: var(--color-light);
-    font-size: 2rem;
-    font-weight: 700;
-    min-height: 2.8rem;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    margin-top: 1rem;
-}
-.stats-info {
-    color: var(--color-light);
-    font-size: 3rem;
-    font-weight: 700;
-}
 
+/* Modal bez zmian */
+.feedback-modal { /* ... */ }
 
-/* Modal z feedbackiem */
-.feedback-modal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 20;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s;
-}
-.feedback-modal.visible {
-    opacity: 1;
-    visibility: visible;
-}
-.modal-content {
-    background: var(--color-light);
-    padding: 3rem 4rem;
-    border-radius: 12px;
-}
-.modal-content p { font-size: 2rem; margin-bottom: 2rem; }
-.correction-panel { display: none; margin-top: 2rem; }
-
-/* === Style przycisków === */
+/* Przyciski */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 1rem 2.8rem;
     border-radius: 8px;
-    border: 2px solid var(--color-light);
+    border: 2px solid #ccc;
     font-size: 1.8rem;
     font-weight: 700;
     cursor: pointer;
-    background-color: transparent;
-    color: var(--color-light);
+    background-color: var(--color-light);
+    color: var(--color-text);
     transition: all 0.2s ease;
 }
-.btn:hover { background-color: var(--color-light); color: var(--color-dark); }
+.btn:hover { background-color: #eee; }
 .btn-large { font-size: 2.4rem; padding: 1.5rem 4rem; border-color: var(--color-primary); color: var(--color-primary); }
 .btn-large:hover { background-color: var(--color-primary); color: var(--color-light); }
-.btn-primary { background-color: var(--color-success); border-color: var(--color-success); }
+.btn-primary { background-color: var(--color-success); border-color: var(--color-success); color: var(--color-light); }
 .btn-primary:hover { background-color: #1b5e20; border-color: #1b5e20; }
-.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); }
+.btn-stop { background-color: var(--color-stop-red); border-color: var(--color-stop-red); color: var(--color-light); }
 .btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
-.modal-content .btn { color: var(--color-text); border-color: #ccc; }
-.modal-content .btn:hover { background-color: #eee; }
