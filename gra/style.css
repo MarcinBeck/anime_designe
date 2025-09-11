@@ -1,4 +1,6 @@
-/* === Style globalne i wspólne === */
+/* Poprzednie style bez zmian... */
+/* (wklej cały plik, aby mieć pewność) */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 62.5%; }
 body {
@@ -6,9 +8,7 @@ body {
     font-size: 1.6rem;
     line-height: 1.7;
     color: #333;
-    background-color: #f5f5f5;
-}
-#game-container {
+    background-color: #222;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -28,14 +28,12 @@ body {
 .main-nav ul { list-style: none; display: flex; gap: 3rem; }
 .main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: #c2185b; }
 
-/* === Główny kontener gry === */
-.game-main-content {
+.game-container-main {
     flex-grow: 1;
     position: relative;
     overflow: hidden;
-    background-color: #222;
 }
-#camera-feed, #overlay-canvas {
+#camera-feed {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -43,14 +41,17 @@ body {
     min-height: 100%;
     width: auto;
     height: auto;
+    z-index: 0;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
 }
-#camera-feed {
-    z-index: 0; /* POPRAWKA: Ustawia wideo jako tło dla tej sekcji, a nie za nią */
-}
-#overlay-canvas {
+/* Styl dla canvasa tworzonego przez face.js */
+.game-container-main canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 5;
 }
+
 .controls-panel {
     position: absolute;
     bottom: 0;
