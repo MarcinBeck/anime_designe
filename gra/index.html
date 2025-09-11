@@ -34,66 +34,54 @@
             <button id="start-btn" class="btn btn-primary btn-large">START</button>
         </div>
 
-        <video id="camera-feed" autoplay playsinline></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <canvas id="overlay-canvas"></canvas>
+        <div id="game-layout" class="game-layout">
+            <div class="video-container">
+                <video id="camera-feed" autoplay playsinline></video>
+                <canvas id="overlay-canvas"></canvas>
+            </div>
+            <div id="controls-panel" class="controls-panel">
+                <div class="controls-container">
+                    <div class="learning-module">
+                        <p>DODAJ PRZYKŁAD:</p>
+                        <div class="buttons-group">
+                            <button class="btn" data-class-id="0">KWADRAT</button>
+                            <button class="btn" data-class-id="1">KOŁO</button>
+                            <button class="btn" data-class-id="2">TRÓJKĄT</button>
+                        </div>
+                    </div>
+                    <div class="prediction-module">
+                         <p>ZGADUJ:</p>
+                         <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+                    </div>
+                    <div class="stats-module">
+                        <p>ZAPISANO DANYCH:</p>
+                        <div id="stats-info" class="stats-info">
+                            <span id="example-counter">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="prediction" class="prediction-output">...</div>
+            </div>
+        </div>
 
+        <canvas id="canvas" style="display: none;"></canvas>
         <button id="stop-btn" class="btn btn-stop">✕</button>
 
-        <div id="controls-panel" class="controls-panel">
-            <div class="controls-container">
-                <div class="learning-module">
-                    <p>DODAJ PRZYKŁAD:</p>
-                    <div class="buttons-group">
-                        <button class="btn" data-class-id="0">KWADRAT</button>
-                        <button class="btn" data-class-id="1">KOŁO</button>
-                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
-                    </div>
-                </div>
-                <div class="prediction-module">
-                     <p>ZGADUJ:</p>
-                     <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
-                </div>
-                <div class="stats-module">
-                    <p>ZAPISANO DANYCH:</p>
-                    <div id="stats-info" class="stats-info">
-                        <span id="example-counter">0</span>
-                    </div>
-                </div>
-            </div>
-            <div id="prediction" class="prediction-output">...</div>
-        </div>
-
         <div id="feedback-modal" class="feedback-modal">
-            <div class="modal-content">
-                <p id="feedback-question">Czy to jest poprawna odpowiedź?</p>
-                <div class="buttons-group">
-                    <button id="feedback-yes" class="btn">Tak</button>
-                    <button id="feedback-no" class="btn">Nie</button>
-                </div>
-                <div id="correction-panel" class="correction-panel">
-                    <p>W takim razie, co to było?</p>
-                     <div class="buttons-group">
-                        <button class="btn" data-class-id="0">KWADRAT</button>
-                        <button class="btn" data-class-id="1">KOŁO</button>
-                        <button class="btn" data-class-id="2">TRÓJKĄT</button>
-                    </div>
-                </div>
             </div>
-        </div>
     </main>
 
     <footer class="main-footer">
         <p>Anime Designe &copy; 2025</p>
     </footer>
 </div>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.4.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.0.4/dist/mobilenet.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script>
-
     <script src="script.js" defer></script>
 </body>
 </html>
