@@ -28,39 +28,27 @@
     </header>
 
     <main class="game-container-main">
-        <div id="start-screen">
-            <h1>Gra AI: Naucz maszynę rozpoznawać gesty</h1>
-            <p>Kliknij start, aby uruchomić kamerę i rozpocząć uczenie.</p>
-            <button id="start-btn" class="btn btn-primary btn-large">START</button>
-        </div>
-
-        <div id="game-layout" class="game-layout">
-            <div class="video-container">
-                <video id="camera-feed" autoplay playsinline></video>
-                <canvas id="overlay-canvas"></canvas>
-            </div>
-            <div id="controls-panel" class="controls-panel">
-                <div id="prediction" class="prediction-output">Uruchamianie...</div>
-                <div class="buttons-group">
-                    <button id="add-example-0" class="btn">Dodaj KWADRAT</button>
-                    <button id="add-example-1" class="btn">Dodaj KOŁO</button>
-                    <button id="add-example-2" class="btn">Dodaj TRÓJKĄT</button>
-                    <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
-                </div>
-            </div>
-        </div>
-        
+        <video id="camera-feed" autoplay playsinline></video>
         <canvas id="canvas" style="display: none;"></canvas>
+
+        <div id="controls-panel" class="controls-panel">
+            <div id="prediction" class="prediction-output">Uruchamianie...</div>
+            <div class="buttons-group">
+                <button id="add-example-0" class="btn">Dodaj KWADRAT</button>
+                <button id="add-example-1" class="btn">Dodaj KOŁO</button>
+                <button id="add-example-2" class="btn">Dodaj TRÓJKĄT</button>
+                <button id="guess-btn" class="btn btn-primary">ZGADNIJ</button>
+            </div>
+        </div>
     </main>
 </div>
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.4.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.0.4/dist/mobilenet.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script>
     
-    <script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
