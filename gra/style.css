@@ -26,11 +26,11 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
     z-index: 20;
 }
 .header-container { display: flex; justify-content: space-between; align-items: center; }
-.header-left { display: flex; align-items: center; gap: 4rem; } /* Zwiększony odstęp */
+.header-left { display: flex; align-items: center; gap: 4rem; }
 .logo-img { height: 5rem; }
 .main-nav ul { list-style: none; display: flex; gap: 3rem; }
 .main-nav a { text-decoration: none; font-weight: 700; font-size: 2rem; color: #c2185b; }
-.auth-container { font-size: 1.4rem; display: flex; align-items: center; } /* Przywrócone */
+.auth-container { font-size: 1.4rem; display: flex; align-items: center; }
 .auth-container button { margin-left: 1rem; }
 
 /* === Główny kontener gry === */
@@ -42,33 +42,19 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
     align-items: center;
     background-color: #1a1a1a;
 }
-
-/* Loader */
-#loader {
-    text-align: center;
-    color: #fff;
-    font-size: 1.8rem;
-    transition: opacity 0.5s, visibility 0.5s;
-}
-#loader.fade-out {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
+#loader { text-align: center; color: #fff; font-size: 1.8rem; transition: opacity 0.5s, visibility 0.5s; }
+#loader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
 .spinner { border: 4px solid rgba(255,255,255,0.3); width: 36px; height: 36px; border-radius: 50%; border-left-color: #c2185b; animation: spin 1s ease infinite; margin: 0 auto 1rem auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .content-wrapper { width: 100%; height: 100%; position: relative; }
 .content-hidden { display: none !important; }
 
-/* Pełnoekranowe wideo */
 .video-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
 }
 #video, #overlay {
     position: absolute;
@@ -82,56 +68,56 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
 }
 #overlay { z-index: 5; }
 
-/* Przycisk "Start kamera" */
 .start-game-controls {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
+}
+
+/* === NOWE STYLE DLA STATUSU I PRZYCISKU STOP === */
+.status {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    z-index: 15;
+    background: rgba(0,0,0,0.5);
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 700;
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 1.5rem;
 }
-.start-game-controls button {
-    background-color: #c2185b;
-    border-color: #c2185b;
+.status a {
     color: #fff;
-    padding: 1.5rem 4rem;
-    font-size: 2.4rem;
-    border-radius: 12px;
+    text-decoration: underline;
+    font-weight: normal;
 }
-.start-game-controls button:hover {
-    background-color: #9c003a;
-    border-color: #9c003a;
+.status a:hover {
+    color: #ccc;
 }
 
-
-/* Przycisk "Stop" (nowa pozycja i styl) */
-#stop-btn {
+.btn-stop {
     position: absolute;
     top: 2rem;
     right: 2rem;
     z-index: 15;
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    font-size: 2.4rem;
+    font-size: 2rem;
     line-height: 1;
     border-radius: 50%;
-    background-color: #d32f2f; 
-    border-color: #d32f2f; 
-    color: #fff;
-    display: flex; /* Aby centrować '✕' */
+    display: flex;
     justify-content: center;
     align-items: center;
 }
-#stop-btn:hover { background-color: #b71c1c; border-color: #b71c1c; }
-.hidden { display: none !important; } /* Upewniamy się, że to działa */
+/* ---- Koniec nowych stylów ---- */
 
-
-/* Dolny panel sterowania */
 .symbol-section {
     position: absolute;
     bottom: 0;
@@ -146,46 +132,15 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
     gap: 1.5rem;
     color: #fff;
 }
-.prediction-area-top {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-}
-.status { font-weight: bold; font-size: 1.4rem; color: #ccc; }
+.hidden { display: none !important; }
+.prediction-area-top { display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; }
 .prediction { font-size: 2.2rem; font-weight: bold; color: #fff; min-height: 3rem; text-shadow: 1px 1px 2px #000; }
 .feedback { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; align-items: center; }
-.feedback-prompt { margin-right: 1rem; }
-.feedback-actions button {
-    background: #4CAF50; /* Yes */
-    border-color: #4CAF50;
-    color: #fff;
-}
-.feedback-actions button:last-child {
-    background: #f44336; /* No */
-    border-color: #f44336;
-}
-.feedback-actions button:hover { opacity: 0.8; }
-
-
-.buttons-control-line {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.add-label {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #fff;
-    margin-left: 1rem;
-}
+.buttons-control-line { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.add-label { font-size: 1.8rem; font-weight: 700; color: #fff; margin-left: 1rem; }
 .classes { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 .classes button { padding: 0.8rem 1.5rem; font-size: 1.6rem; }
-.gallery-container { display: none; } /* Ukrywamy galerię, jeśli nie jest potrzebna wizualnie */
-
+.gallery-container { display: none; }
 
 #toast-container { position: fixed; top: 90px; right: 20px; z-index: 1000; }
 .toast { padding: 1.5rem; border-radius: 8px; color: #fff; margin-bottom: 1rem; animation: slideIn 0.5s forwards; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
@@ -195,10 +150,12 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
 @keyframes slideOut { to { transform: translateX(120%); } }
 
 button { padding: 1rem 2rem; border-radius: 8px; border: 2px solid transparent; font-size: 1.6rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
-.btn-primary { background-color: #c2185b; border-color: #c2185b; color: #fff; } /* Zmieniony na magentowy */
+.btn-primary { background-color: #c2185b; border-color: #c2185b; color: #fff; }
 .btn-primary:hover { background-color: #9c003a; border-color: #9c003a; }
-.symbol-section button:not(.btn-primary):not(.clear-button):not(.feedback-actions button) { border-color: #fff; color: #fff; background: transparent; }
-.symbol-section button:not(.btn-primary):not(.clear-button):not(.feedback-actions button):hover { background: #fff; color: #1a1a1a; }
-
+.btn-large { padding: 1.5rem 4rem; font-size: 2.4rem; }
+.symbol-section button:not(.btn-primary) { border-color: #fff; color: #fff; background: transparent; }
+.symbol-section button:not(.btn-primary):hover { background: #fff; color: #1a1a1a; }
+.btn-stop { background-color: #d32f2f; border-color: #d32f2f; color: #fff; }
+.btn-stop:hover { background-color: #b71c1c; border-color: #b71c1c; }
 .logout-btn { background: none; border: none; color: #c2185b; font-weight: 700; text-decoration: underline; font-size: 1.6rem; padding: 0.5rem 1rem; }
 .logout-btn:hover { color: #9c003a; }
