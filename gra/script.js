@@ -12,9 +12,6 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // === Pobieranie elementów DOM ===
-const gameContainer = document.getElementById('game-container');
-const startBtn = document.getElementById('start-btn');
-const stopBtn = document.getElementById('stop-btn');
 const video = document.getElementById('camera-feed');
 const predictionText = document.getElementById('prediction');
 const btnAddExample0 = document.getElementById('add-example-0');
@@ -24,46 +21,40 @@ const btnGuess = document.getElementById('guess-btn');
 
 let classifier;
 let mobilenetModel;
-let videoStream; // Zmienna do przechowywania strumienia kamery
 const CLASS_NAMES = ["KWADRAT", "KOŁO", "TRÓJKĄT"];
 
 // === Logika detekcji twarzy ===
 const MODEL_URL = './models';
-let faceApiInterval;
 
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    // POPRAWKA: Użycie prawidłowej nazwy modelu 'tiny', który posiadasz
+    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
     faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-]).then(setupApp);
+]).then(startVideo);
 
 function startVideo() {
-    return new Promise((resolve, reject) => {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                videoStream = stream;
-                video.srcObject = stream;
-                video.addEventListener('play', resolve);
-            })
-            .catch(err => {
-                console.error("Błąd dostępu do kamery:", err);
-                reject(err);
-            });
-    });
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => console.error("Błąd dostępu do kamery:", err));
 }
 
-function stopVideo() {
-    if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-    }
-    video.srcObject = null;
-    videoStream = null;
-    clearInterval(faceApiInterval);
-    const canvas = document.querySelector('.game-container-main canvas');
-    if (canvas) {
+video.addEventListener('play', () => {
+    const canvas = faceapi.createCanvasFromMedia(video);
+    document.querySelector('.game-container-main').append(canvas);
+    const displaySize = { width: video.clientWidth, height: video.clientHeight };
+    faceapi.matchDimensions(canvas, displaySize);
+
+    setInterval(async () => {
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    }
-}
+        faceapi.draw.drawDetections(canvas, resizedDetections);
+    }, 100);
+});
+
 
 // === Logika klasyfikacji gestów ===
 async function initKNN() {
@@ -75,7 +66,13 @@ async function initKNN() {
     } catch (error) {
         console.error("Błąd ładowania modelu gestów:", error);
         predictionText.innerText = "Błąd ładowania modeli AI!";
+        return;
     }
+
+    btnAddExample0.addEventListener('click', () => addExample(0));
+    btnAddExample1.addEventListener('click', () => addExample(1));
+    btnAddExample2.addEventListener('click', () => addExample(2));
+    btnGuess.addEventListener('click', guess);
 }
 
 function addExample(classId) {
@@ -97,34 +94,39 @@ async function guess() {
     }
 }
 
-function saveModel() { /* ... bez zmian */ }
-async function loadModel() { /* ... bez zmian */ }
-
-// === Główna konfiguracja aplikacji ===
-function setupApp() {
-    startBtn.addEventListener('click', async () => {
-        gameContainer.classList.add('game-active');
-        await startVideo();
-        
-        const canvas = faceapi.createCanvasFromMedia(video);
-        document.querySelector('.game-container-main').append(canvas);
-        const displaySize = { width: video.clientWidth, height: video.clientHeight };
-        faceapi.matchDimensions(canvas, displaySize);
-
-        faceApiInterval = setInterval(async () => {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-            faceapi.draw.drawDetections(canvas, resizedDetections);
-        }, 100);
-
-        initKNN();
-    });
-
-    stopBtn.addEventListener('click', () => {
-        stopVideo();
-        gameContainer.classList.remove('game-active');
-    });
-
-    // Wklej tutaj pełną zawartość funkcji saveModel i loadModel
+function saveModel() {
+    if (classifier.getNumClasses() > 0) {
+        const dataset = classifier.getClassifierDataset();
+        const datasetObj = {};
+        Object.keys(dataset).forEach((key) => {
+            const data = dataset[key].dataSync();
+            datasetObj[key] = Array.from(data);
+        });
+        const jsonStr = JSON.stringify(datasetObj);
+        database.ref('models/knn-model').set(jsonStr);
+        console.log('Model gestów zapisany.');
+    }
 }
+
+async function loadModel() {
+    predictionText.innerText = "Wczytywanie modelu gestów...";
+    const snapshot = await database.ref('models/knn-model').get();
+    const jsonStr = snapshot.val();
+    if (jsonStr) {
+        const dataset = JSON.parse(jsonStr);
+        const tensorObj = Object.fromEntries(
+            Object.entries(dataset).map(([label, data]) => {
+                const features = data.length / 1024;
+                return [label, tf.tensor2d(data, [features, 1024])];
+            })
+        );
+        classifier.setClassifierDataset(tensorObj);
+        const exampleCount = Object.values(tensorObj).reduce((sum, tensor) => sum + tensor.shape[0], 0);
+        predictionText.innerText = `Model gestów wczytany (${exampleCount} przykładów).`;
+    } else {
+        predictionText.innerText = "Nie znaleziono modelu. Naucz mnie czegoś!";
+    }
+}
+
+// Uruchomienie części odpowiedzialnej za gesty
+initKNN();
