@@ -1,16 +1,12 @@
 'use strict';
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === POBIERANIE ELEMENTÓW DOM ===
-    const gameContainer = document.getElementById('game-container');
     const loader = document.getElementById('loader');
     const loaderStatus = document.getElementById('loader-status');
     const contentWrapper = document.querySelector('.content-wrapper');
     const authContainer = document.getElementById('auth-container');
-    const authContainerStart = document.getElementById('auth-container-start');
     const cameraToggleBtn = document.getElementById('camera-toggle-btn');
-    const stopBtn = document.getElementById('stop-btn');
-    const symbolSection = document.getElementById('symbol-section');
+    const symbolSection = document.querySelector('.symbol-section');
     const classButtons = document.querySelectorAll('.classes button');
     const predictBtn = document.getElementById('predictBtn');
     const video = document.getElementById('video');
@@ -31,68 +27,85 @@ window.addEventListener('DOMContentLoaded', () => {
     let blazeFaceModel;
     let detectionIntervalId = null;
     let lastDetectedFace = null;
+    let isCameraOn = false;
 
-    // === FUNKCJE AI i KAMERY ===
     const tensorToJSON = (tensor) => Array.from(tensor.dataSync());
 
     async function loadModels() {
-        loaderStatus.textContent = "Ładowanie MobileNet...";
-        net = await mobilenet.load();
-        loaderStatus.textContent = "Ładowanie BlazeFace...";
-        blazeFaceModel = await blazeface.load();
+      loaderStatus.textContent = "Ładowanie modeli AI...";
+      try {
+        [net, blazeFaceModel] = await Promise.all([
+            mobilenet.load(),
+            blazeface.load()
+        ]);
         classifier = knnClassifier.create();
         return true;
+      } catch (e) {
+        loaderStatus.textContent = "Błąd krytyczny ładowania modeli AI.";
+        console.error("Błąd ładowania modeli:", e);
+        return false;
+      }
     }
 
     async function runDetectionLoop() {
-        if (currentStream && blazeFaceModel && !video.paused && !video.ended) {
-            const faces = await blazeFaceModel.estimateFaces(video, false);
-            overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-            if (faces.length > 0) {
-                lastDetectedFace = faces[0];
-                const start = lastDetectedFace.topLeft;
-                const end = lastDetectedFace.bottomRight;
-                const size = [end[0] - start[0], end[1] - start[1]];
-                overlayCtx.strokeStyle = '#2e7d32';
-                overlayCtx.lineWidth = 4;
-                overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
-                if (feedbackContainer.innerHTML === '') {
-                    classButtons.forEach(btn => btn.disabled = false);
-                    predictBtn.disabled = false;
-                }
-            } else {
-                lastDetectedFace = null;
-                classButtons.forEach(btn => btn.disabled = true);
-                predictBtn.disabled = true;
-            }
-            detectionIntervalId = setTimeout(runDetectionLoop, 100);
+      if (isCameraOn && blazeFaceModel && !video.paused && !video.ended) {
+        const faces = await blazeFaceModel.estimateFaces(video, false);
+        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        if (faces.length > 0) {
+          lastDetectedFace = faces[0];
+          const start = lastDetectedFace.topLeft;
+          const end = lastDetectedFace.bottomRight;
+          const size = [end[0] - start[0], end[1] - start[1]];
+          overlayCtx.strokeStyle = '#c2185b';
+          overlayCtx.lineWidth = 4;
+          overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
+          if (feedbackContainer.innerHTML === '') {
+            classButtons.forEach(btn => btn.disabled = false);
+            predictBtn.disabled = false;
+          }
+        } else {
+          lastDetectedFace = null;
+          classButtons.forEach(btn => btn.disabled = true);
+          predictBtn.disabled = true;
         }
+        detectionIntervalId = setTimeout(runDetectionLoop, 200);
+      }
     }
 
     function startCamera() {
-        gameContainer.classList.add('game-active');
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                currentStream = stream;
-                video.srcObject = stream;
-                video.play();
-                video.addEventListener('loadeddata', () => {
-                    overlay.width = video.videoWidth;
-                    overlay.height = video.videoHeight;
-                    runDetectionLoop();
-                });
-                symbolSection.classList.remove('hidden');
-            }).catch(err => {
-                showToast(`Błąd kamery: ${err.message}`, 'error');
-                stopCamera();
-            });
+      cameraToggleBtn.disabled = true;
+      cameraToggleBtn.textContent = 'Ładowanie...';
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          currentStream = stream;
+          video.srcObject = stream;
+          video.play();
+          video.addEventListener('loadeddata', () => {
+              overlay.width = video.videoWidth;
+              overlay.height = video.videoHeight;
+              runDetectionLoop();
+          });
+          isCameraOn = true;
+          cameraToggleBtn.textContent = 'Stop kamera';
+          cameraToggleBtn.disabled = false;
+          symbolSection.classList.remove('hidden');
+        }).catch(err => {
+            showToast(`Błąd kamery: ${err.message}`, 'error');
+            cameraToggleBtn.textContent = 'Start kamera';
+            cameraToggleBtn.disabled = false;
+        });
     }
 
     function stopCamera() {
-        if (detectionIntervalId) { clearTimeout(detectionIntervalId); }
-        if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
-        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-        gameContainer.classList.remove('game-active');
+      if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+      overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+      isCameraOn = false;
+      cameraToggleBtn.textContent = 'Start kamera';
+      cameraToggleBtn.disabled = false;
+      symbolSection.classList.add('hidden');
+      classButtons.forEach(btn => btn.disabled = true);
+      predictBtn.disabled = true;
     }
 
     function clearFeedbackUI() { feedbackContainer.innerHTML = ''; }
@@ -123,14 +136,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function showCorrectionUI(predictedSymbol, logits) {
         clearFeedbackUI();
-        feedbackContainer.innerHTML = `<p class="feedback-prompt">W takim razie, co to było?</p><div class="feedback-actions">${classNames.map(name => `<button data-correct-symbol="${name}">${name}</button>`).join('')}</div>`;
+        feedbackContainer.innerHTML = `
+            <p class="feedback-prompt">W takim razie, co to było?</p>
+            <div class="feedback-actions">
+                ${classNames.map(name => `<button data-correct-symbol="${name}">${name}</button>`).join('')}
+            </div>
+        `;
         document.querySelectorAll('[data-correct-symbol]').forEach(btn => {
             btn.onclick = () => { handleIncorrectPrediction(predictedSymbol, btn.dataset.correctSymbol, logits); };
         });
     }
 
     function showFeedbackUI(result, logits) {
-        feedbackContainer.innerHTML = `<p class="feedback-prompt">Czy to poprawna odpowiedź?</p><div class="feedback-actions"><button id="yesBtn">✅ Tak</button><button id="noBtn">❌ Nie</button></div>`;
+        feedbackContainer.innerHTML = `
+            <p class="feedback-prompt">Czy to poprawna odpowiedź?</p>
+            <div class="feedback-actions">
+                <button id="yesBtn">✅ Tak</button>
+                <button id="noBtn">❌ Nie</button>
+            </div>
+        `;
         document.getElementById('yesBtn').onclick = () => handleCorrectPrediction(result.label);
         document.getElementById('noBtn').onclick = () => showCorrectionUI(result.label, logits);
     }
@@ -185,30 +209,30 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadModelFromFirebase() {
-        if (!currentUser || !classifier) return;
-        classifier.clearAllClasses();
-        gallery.innerHTML = "";
-        const samplesPath = `training_samples/${currentUser.uid}`;
-        const snapshot = await database.ref(samplesPath).once('value');
-        const allSamples = snapshot.val();
-        if (allSamples) {
-            statusEl.textContent = 'Odtwarzanie modelu...';
-            let processedCount = 0;
-            for (const key of Object.keys(allSamples)) {
-                const sample = allSamples[key];
-                if (sample.tensor) {
-                    const tensor = tf.tensor2d(sample.tensor, [1, 1024]);
-                    classifier.addExample(tensor, sample.symbol);
-                    processedCount++;
-                }
+      if (!currentUser || !classifier) return;
+      classifier.clearAllClasses();
+      gallery.innerHTML = "";
+      const samplesPath = `training_samples/${currentUser.uid}`;
+      const snapshot = await database.ref(samplesPath).once('value');
+      const allSamples = snapshot.val();
+      if (allSamples) {
+        statusEl.textContent = 'Odtwarzanie modelu z zapisanych próbek...';
+        let processedCount = 0;
+        for (const key of Object.keys(allSamples)) {
+            const sample = allSamples[key];
+            if (sample.tensor) {
+                const tensor = tf.tensor2d(sample.tensor, [1, 1024]);
+                classifier.addExample(tensor, sample.symbol);
+                processedCount++;
             }
-            gallery.innerHTML = `<p class="gallery-info">Model wczytany z ${processedCount} próbek.</p>`;
         }
-        updateStatus();
+        gallery.innerHTML = `<p class="gallery-info">Model wczytany z ${processedCount} próbek. Galeria jest pusta, ponieważ obrazki nie są zapisywane.</p>`;
+      }
+      updateStatus();
     }
     
     async function clearData() {
-        if (!confirm("Na pewno chcesz usunąć wszystkie próbki?")) return;
+        if (!confirm("Czy na pewno chcesz usunąć wszystkie zebrane próbki?")) return;
         try {
           if (currentUser) {
             await database.ref(`training_samples/${currentUser.uid}`).remove();
@@ -216,9 +240,9 @@ window.addEventListener('DOMContentLoaded', () => {
           }
           if (classifier) classifier.clearAllClasses();
           gallery.innerHTML = "";
-          predictionEl.textContent = "";
+          predictionEl.textContent = "Wyczyszczono dane.";
           updateStatus();
-        } catch (error) { console.error("Błąd czyszczenia danych:", error); }
+        } catch (error) { console.error("Błąd podczas czyszczenia danych:", error); }
     }
 
     function logTrainingSample(symbol, source, logits) {
@@ -258,40 +282,36 @@ window.addEventListener('DOMContentLoaded', () => {
     function handleLoggedOutState() {
       currentUser = null;
       stopCamera();
-      const loginBtnHTML = '<button id="login-btn">Zaloguj jako Gość</button>';
-      authContainer.innerHTML = loginBtnHTML;
-      authContainerStart.innerHTML = loginBtnHTML;
-      document.querySelectorAll('#login-btn').forEach(btn => btn.addEventListener('click', () => { firebase.auth().signInAnonymously(); }));
-      cameraToggleBtn.style.display = 'none';
+      authContainer.innerHTML = '<button id="login-btn" class="btn-primary">Zaloguj jako Gość</button>';
+      statusEl.textContent = "Zaloguj się, aby rozpocząć.";
+      predictionEl.textContent = ""; gallery.innerHTML = "";
+      clearBtn.disabled = true;
+      if(classifier) classifier.clearAllClasses();
+      document.getElementById('login-btn').addEventListener('click', () => { firebase.auth().signInAnonymously(); });
     }
 
     async function handleLoggedInState(user) {
       currentUser = user;
-      const userInfoHTML = `<span class="welcome-message">Witaj, Gościu!</span><button id="logout-btn">Wyloguj</button>`;
-      authContainer.innerHTML = userInfoHTML;
-      authContainerStart.innerHTML = userInfoHTML;
-      document.querySelectorAll('#logout-btn').forEach(btn => btn.addEventListener('click', () => firebase.auth().signOut()));
-      cameraToggleBtn.style.display = 'inline-block';
+      authContainer.innerHTML = `<span class="welcome-message">Witaj, Gościu! (${user.uid.substring(0,6)})</span><button id="logout-btn">Wyloguj</button>`;
+      document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+      clearBtn.disabled = false;
+      statusEl.textContent = "Wczytywanie zapisanego modelu...";
       await loadModelFromFirebase();
     }
 
     async function main() {
-      try {
-        await loadModels();
+      if (await loadModels()) {
         loader.classList.add('fade-out');
         contentWrapper.classList.remove('content-hidden');
         loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
-        
+        statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
         firebase.auth().onAuthStateChanged(user => {
             if (user) { handleLoggedInState(user); } else { handleLoggedOutState(); }
         });
-      } catch (error) {
-          loaderStatus.textContent = "Błąd krytyczny. Nie udało się załadować modeli AI. Odśwież stronę.";
       }
     }
 
-    cameraToggleBtn.addEventListener('click', startCamera);
-    stopBtn.addEventListener('click', stopCamera);
+    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
     clearBtn.addEventListener('click', clearData);
     classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
     predictBtn.addEventListener('click', predict);
