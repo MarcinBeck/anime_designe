@@ -1,6 +1,6 @@
 /* === Główny kontener gry === */
 main.game-container-main {
-    flex-grow: 1; /* Pozwala na rozciągnięcie do dostępnej wysokości */
+    flex-grow: 1;
     position: relative;
     display: flex;
     justify-content: center;
@@ -11,8 +11,6 @@ main.game-container-main {
     background-position: center;
     background-repeat: no-repeat;
     width: 100%;
-    /* Dodajemy minimalną wysokość, jeśli flex-grow nie zadziała idealnie */
-    min-height: calc(100vh - 80px - 60px); /* 100vh - wysokość nagłówka - wysokość stopki (przybliżone wartości) */
 }
 .game-container-main::before {
     content: '';
@@ -50,36 +48,27 @@ main.game-container-main {
     to { transform: rotate(360deg); } 
 }
 .content-wrapper {
-    position: absolute; /* Zmieniamy na absolute, aby mógł swobodnie zajmować przestrzeń */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%; /* Rozciągamy na cały game-container-main */
-    display: flex; /* Dodajemy flexbox, aby dzieci mogły być elastyczne */
-    flex-direction: column; /* Układamy dzieci w kolumnie */
-    justify-content: space-between; /* Rozmieszcza elementy na krańcach */
-    position: relative; /* Ważne, by jego dzieci mogły być pozycjonowane względem niego */
-    z-index: 2;
-}
-.content-wrapper.hidden {
-    display: none; /* Upewniamy się, że to działa */
-}
-
-/* === Elementy wideo i gry === */
-.video-container {
-    position: absolute; /* Ustawiamy na absolute względem content-wrapper */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 3; /* Upewniamy się, że jest nad tłem, ale pod nakładką */
-    display: flex; /* Dodajemy flex dla centrowania video */
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; /* Zapobieganie wyciekowi wideo */
+    z-index: 2;
+}
+
+
+/* === Elementy wideo i gry === */
+.video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    overflow: hidden;
 }
 #video, #overlay {
-    position: absolute; /* Zamiast relative do video-container */
+    position: absolute;
     top: 50%;
     left: 50%;
     min-width: 100%;
@@ -87,13 +76,28 @@ main.game-container-main {
     width: auto;
     height: auto;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
-    display: none; /* Domyślnie ukryte, JS je włączy */
+    display: none;
 }
 #overlay { 
     z-index: 5; 
 }
+
+/* === Kontener na elementy UI nad wideo === */
+#game-ui-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 12;
+    pointer-events: none;
+}
+#game-ui-elements > * {
+    pointer-events: auto;
+}
+
 .start-game-controls {
-    position: absolute; /* Ustawiamy na absolute względem content-wrapper */
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -110,9 +114,6 @@ main.game-container-main {
     color: var(--color-light);
     font-size: 1.4rem;
     font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
 }
 .btn-stop {
     position: absolute;
@@ -137,21 +138,21 @@ main.game-container-main {
     border-color: #b71c1c;
 }
 
+
 /* === Dolny panel sterowania AI === */
 .symbol-section {
-    position: relative; /* Zmieniamy na relative, ale wciąż możemy używać flexbox */
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     background: rgba(0,0,0,0.75);
     padding: 2rem;
-    z-index: 10;
+    z-index: 20; /* Wyżej niż inne elementy UI */
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
     color: var(--color-light);
-    flex-shrink: 0; /* Zapobiega zmniejszaniu się sekcji, jeśli brakuje miejsca */
 }
 .prediction-area-top { 
     display: flex; 
@@ -214,6 +215,7 @@ main.game-container-main {
     font-size: 1.4rem;
     text-align: center;
 }
+
 
 /* === Komunikaty Toast === */
 #toast-container { 
