@@ -234,4 +234,12 @@ main.game-container-main {
     background-color: #0277bd; 
 }
 .toast.error { 
-    background-
+    background-color: #c62828; 
+}
+@keyframes slideIn { 
+    from { transform: translateX(120%); } 
+    to { transform: translateX(0); } 
+}
+@keyframes slideOut { 
+    to { transform: translateX(120%); } 
+}
