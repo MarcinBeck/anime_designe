@@ -11,18 +11,21 @@
 </head>
 <body>
     <header class="main-header">
-        <div class="container">
-            <a href="../index.html" class="logo-link">
-                <img class="logo-img" src="../img/logo.png" alt="Logo" />
-            </a>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="../index.html#gallery">Galeria</a></li>
-                    <li><a href="../desktop-3.html">Kontakt</a></li>
-                    <li><a href="index.html">Gra</a></li>
-                    <li><a href="../statystyki.html">Statystyki</a></li>
-                </ul>
-            </nav>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="../index.html" class="logo-link">
+                    <img class="logo-img" src="../img/logo.png" alt="Logo" />
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="../index.html#gallery">Galeria</a></li>
+                        <li><a href="../desktop-3.html">Kontakt</a></li>
+                        <li><a href="index.html">Gra</a></li>
+                        <li><a href="../statystyki.html">Statystyki</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div id="auth-container" class="auth-container"></div>
         </div>
     </header>
 
@@ -36,22 +39,29 @@
             <div class="video-container">
                 <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
+
+                <div id="status" class="status"></div>
+                <button id="stop-btn" class="btn-stop hidden">✕</button>
             </div>
-            <div class="controls">
-                <div id="auth-container"></div>
+            
+            <div class="start-game-controls">
                 <button id="camera-toggle-btn">Start kamera</button>
             </div>
-            <div class="symbol-section hidden">
-                <div class="status" id="status"></div>
-                <div class="classes">
-                    <button data-class="KOŁO" disabled>Dodaj KOŁO</button>
-                    <button data-class="KWADRAT" disabled>Dodaj KWADRAT</button>
-                    <button data-class="TRÓJKĄT" disabled>Dodaj TRÓJKĄT</button>
-                </div>
-                <button id="predictBtn" class="btn-primary" disabled>Zgadnij symbol</button>
-                <div id="prediction-area">
-                    <div class="prediction" id="prediction"></div>
+
+            <div id="symbol-section" class="symbol-section hidden">
+                <div class="prediction-area-top">
+                    <div id="prediction" class="prediction"></div>
                     <div class="feedback" id="feedback-container"></div>
+                </div>
+                
+                <div class="buttons-control-line">
+                    <button id="predictBtn" class="btn-primary">Zgadnij symbol</button>
+                    <span class="add-label">Dodaj:</span>
+                    <div class="classes">
+                        <button class="btn" data-class="KOŁO">KOŁO</button>
+                        <button class="btn" data-class="KWADRAT">KWADRAT</button>
+                        <button class="btn" data-class="TRÓJKĄT">TRÓJKĄT</button>
+                    </div>
                 </div>
                 <div class="gallery-container">
                     <div class="gallery-header">
