@@ -8,36 +8,40 @@
     <title>Anime Designe | Nowoczesne Strony Internetowe</title>
     <meta name="description" content="Tworzymy nowoczesne i unikalne strony internetowe w stylu anime. Zobacz nasze portfolio i skontaktuj się z nami.">
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/home.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet" rel="preload" as="style">
 </head>
-<body>
+<body class="home">
 
     <header class="main-header">
-        <div class="container">
-            <a href="#" class="logo-link">
-                <img class="logo-img" src="img/logo.png" alt="Logo Anime Designe - stylizowana postać z anime" />
-            </a>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="#gallery">Galeria</a></li>
-                    <li><a href="desktop-3.html">Kontakt</a></li>
-                    <li><a href="gra/index.html">Gra</a></li> 
-                </ul>
-            </nav>
+        <div class="container header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo-link">
+                    <img class="logo-img" src="img/logo.png" alt="Logo Anime Designe" />
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="#gallery">Galeria</a></li>
+                        <li><a href="desktop-3.html">Kontakt</a></li>
+                        <li><a href="gra/index.html">Gra</a></li> 
+                    </ul>
+                </nav>
+            </div>
+            <div id="auth-container" class="auth-container">
+                </div>
         </div>
     </header>
 
     <main>
         <section class="hero full-screen">
-            <div class="hero-bg">
-            </div>
+            <div class="hero-bg"></div>
             <div class="container hero-content">
                 <div class="hero-text">
-                    <h1 class="parallax-text-left">A bold headline<br>1.2.4</h1>
+                    <h1 class="parallax-text-left">A bold headline<br>1.0.66</h1>
                     <p class="parallax-text-right">Go ahead and say just a little more about what you do.</p>
                     <div class="hero-buttons">
                         <button class="btn btn-primary parallax-btn-left">Button label</button>
@@ -173,7 +177,7 @@
         <p>Anime Designe &copy; 2025</p>
     </footer>
     
-    <script src="js/main.js" defer></script>
-
+    <script src="js/global.js" defer></script>
+    <script src="js/home.js" defer></script>
 </body>
 </html>
