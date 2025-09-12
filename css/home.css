@@ -557,16 +557,23 @@
 
 .magenta-image-content {
     position: absolute;
-    bottom: -20px;
-    right: -50px;
-    width: 45%;
-    max-width: 450px;
+    bottom: 0;
+    right: 0;
+    width: auto;
+    height: 100%;
+    max-width: none;
+    max-height: 100%;
     z-index: 1;
+    display: flex;
+    align-items: stretch;
 }
 
 .magenta-image-content img {
-    width: 100%;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    filter: none;
+    object-fit: contain;
 }
 
 /* Responsive adjustments */
