@@ -6,6 +6,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const contentWrapper = document.querySelector('.content-wrapper');
     const authContainer = document.getElementById('auth-container');
     const cameraToggleBtn = document.getElementById('camera-toggle-btn');
+    const startGameControls = document.querySelector('.start-game-controls');
+    const stopBtn = document.getElementById('stop-btn');
     const symbolSection = document.querySelector('.symbol-section');
     const classButtons = document.querySelectorAll('.classes button');
     const predictBtn = document.getElementById('predictBtn');
@@ -86,8 +88,8 @@ window.addEventListener('DOMContentLoaded', () => {
               runDetectionLoop();
           });
           isCameraOn = true;
-          cameraToggleBtn.textContent = 'Stop kamera';
-          cameraToggleBtn.disabled = false;
+          startGameControls.classList.add('hidden');
+          stopBtn.classList.remove('hidden');
           symbolSection.classList.remove('hidden');
         }).catch(err => {
             showToast(`Błąd kamery: ${err.message}`, 'error');
@@ -103,6 +105,8 @@ window.addEventListener('DOMContentLoaded', () => {
       isCameraOn = false;
       cameraToggleBtn.textContent = 'Start kamera';
       cameraToggleBtn.disabled = false;
+      startGameControls.classList.remove('hidden');
+      stopBtn.classList.add('hidden');
       symbolSection.classList.add('hidden');
       classButtons.forEach(btn => btn.disabled = true);
       predictBtn.disabled = true;
@@ -311,7 +315,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
+    cameraToggleBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
     clearBtn.addEventListener('click', clearData);
     classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
     predictBtn.addEventListener('click', predict);
