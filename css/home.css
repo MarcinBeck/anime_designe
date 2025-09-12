@@ -422,22 +422,27 @@
 
 /* === Magenta Moments Section === */
 .magenta-moments-section {
-    background-color: #1a0f2a; /* Ciemne, fioletowe tło */
-    background-image: linear-gradient(135deg, #2c1c46 0%, #1a0f2a 80%);
-    color: var(--color-light);
-    padding: 8rem 0;
-    overflow: hidden; /* Zapobiega problemom z pozycjonowaniem obrazka */
+    background-color: var(--color-light); /* Białe tło dla całej sekcji */
+    padding: 0 0 10rem 0; /* 100px białej przestrzeni pod spodem (10rem = 100px) */
 }
 
 .magenta-moments-section .container {
     display: flex;
-    align-items: center;
-    gap: 4rem;
+    position: relative; /* Konieczne do pozycjonowania obrazka */
+    overflow: hidden; /* Ukrywa wystające części obrazka */
+    background-color: #1a0f2a;
+    background-image: linear-gradient(135deg, #2c1c46 0%, #1a0f2a 80%);
+    color: var(--color-light);
+    padding: 6rem;
+    border-radius: 12px;
+    min-height: 400px; /* Minimalna wysokość, aby obrazek się zmieścił */
 }
 
 .magenta-text-content {
-    flex: 1;
+    flex-basis: 60%; /* Tekst zajmuje 60% szerokości */
     max-width: 550px;
+    position: relative; /* Upewnia się, że tekst jest nad obrazkiem */
+    z-index: 2;
 }
 
 .magenta-text-content h2 {
@@ -457,21 +462,57 @@
     font-size: 1.8rem;
     line-height: 1.7;
     margin-bottom: 3rem;
-    max-width: 45ch; /* Ograniczenie szerokości tekstu dla lepszej czytelności */
+    max-width: 45ch;
 }
 
 .magenta-image-content {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: absolute;
+    bottom: -20px; /* Wypycha obrazek lekko w dół */
+    right: -50px; /* Wypycha obrazek lekko w prawo */
+    width: 45%;
+    max-width: 450px;
+    z-index: 1; /* Ustawia obrazek pod tekstem */
 }
 
 .magenta-image-content img {
-    max-width: 400px;
     width: 100%;
-    transform: rotate(5deg) scale(1.1); /* Lekka rotacja i powiększenie dla dynamiki */
     filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .magenta-moments-section .container {
+        flex-direction: column;
+        padding: 4rem;
+        min-height: auto;
+    }
+
+    .magenta-text-content {
+        flex-basis: auto;
+        max-width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .magenta-image-content {
+        position: relative; /* Zmiana z absolute na static */
+        bottom: auto;
+        right: auto;
+        width: 80%;
+        max-width: 350px;
+        margin-top: 4rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .magenta-text-content h2 {
+        font-size: 3.2rem;
+    }
+    .magenta-text-content h3 {
+        font-size: 4rem;
+    }
 }
 
 /* Responsive adjustments */
