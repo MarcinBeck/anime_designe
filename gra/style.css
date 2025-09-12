@@ -169,6 +169,12 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
 .classes button { padding: 0.8rem 1.5rem; font-size: 1.6rem; }
 .gallery-container { display: none; }
 
+.face-prompt {
+    color: #fff;
+    font-size: 1.4rem;
+    text-align: center;
+}
+
 #toast-container { position: fixed; top: 90px; right: 20px; z-index: 1000; }
 .toast { padding: 1.5rem; border-radius: 8px; color: #fff; margin-bottom: 1rem; animation: slideIn 0.5s forwards; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
 .toast.info { background-color: #0277bd; }
