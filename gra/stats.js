@@ -6,6 +6,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const contentWrapper = document.querySelector('.content-wrapper');
     const authContainer = document.getElementById('auth-container');
     const cameraToggleBtn = document.getElementById('camera-toggle-btn');
+    const startGameControls = document.querySelector('.start-game-controls');
+    const stopBtn = document.getElementById('stop-btn');
     const symbolSection = document.querySelector('.symbol-section');
     const classButtons = document.querySelectorAll('.classes button');
     const predictBtn = document.getElementById('predictBtn');
@@ -18,6 +20,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('overlay');
     const overlayCtx = overlay.getContext('2d');
     const feedbackContainer = document.getElementById('feedback-container');
+    const buttonsControlLine = document.querySelector('.buttons-control-line');
+    const facePrompt = document.getElementById('face-prompt');
 
     let currentUser = null;
     let currentStream = null;
@@ -59,12 +63,20 @@ window.addEventListener('DOMContentLoaded', () => {
           overlayCtx.strokeStyle = '#c2185b';
           overlayCtx.lineWidth = 4;
           overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
+          
+          buttonsControlLine.classList.remove('hidden');
+          facePrompt.classList.add('hidden');
+          
           if (feedbackContainer.innerHTML === '') {
             classButtons.forEach(btn => btn.disabled = false);
             predictBtn.disabled = false;
           }
         } else {
           lastDetectedFace = null;
+          
+          buttonsControlLine.classList.add('hidden');
+          facePrompt.classList.remove('hidden');
+
           classButtons.forEach(btn => btn.disabled = true);
           predictBtn.disabled = true;
         }
@@ -85,9 +97,11 @@ window.addEventListener('DOMContentLoaded', () => {
               overlay.height = video.videoHeight;
               runDetectionLoop();
           });
+          video.style.display = 'block';
+          overlay.style.display = 'block';
           isCameraOn = true;
-          cameraToggleBtn.textContent = 'Stop kamera';
-          cameraToggleBtn.disabled = false;
+          startGameControls.classList.add('hidden');
+          stopBtn.classList.remove('hidden');
           symbolSection.classList.remove('hidden');
         }).catch(err => {
             showToast(`Błąd kamery: ${err.message}`, 'error');
@@ -100,9 +114,13 @@ window.addEventListener('DOMContentLoaded', () => {
       if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
       if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
       overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+      video.style.display = 'none';
+      overlay.style.display = 'none';
       isCameraOn = false;
       cameraToggleBtn.textContent = 'Start kamera';
       cameraToggleBtn.disabled = false;
+      startGameControls.classList.remove('hidden');
+      stopBtn.classList.add('hidden');
       symbolSection.classList.add('hidden');
       classButtons.forEach(btn => btn.disabled = true);
       predictBtn.disabled = true;
@@ -180,6 +198,7 @@ window.addEventListener('DOMContentLoaded', () => {
       classifier.addExample(logits, label);
       updateStatus();
       await logTrainingSample(label, 'manual', logits);
+      showToast("Kolejny model został dodany", 'info');
     }
 
     async function predict() {
@@ -311,7 +330,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    cameraToggleBtn.addEventListener('click', () => { isCameraOn ? stopCamera() : startCamera(); });
+    cameraToggleBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
     clearBtn.addEventListener('click', clearData);
     classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
     predictBtn.addEventListener('click', predict);
