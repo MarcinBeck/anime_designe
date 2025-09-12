@@ -499,37 +499,37 @@
 /* === Magenta Moments Section === */
 .magenta-moments-section {
     background-color: var(--color-light); /* Białe tło dla całej sekcji */
-    padding: 0 0 10rem 0; /* 100px białej przestrzeni pod spodem (10rem = 100px) */
+    padding: 0 0 10rem 0; /* 100px białej przestrzeni pod spodem */
 }
 
 .magenta-moments-section .container {
     display: flex;
-    position: relative; /* Konieczne do pozycjonowania obrazka */
-    overflow: hidden; /* Ukrywa wystające części obrazka */
-    background-color: #0c7bb3; /* Główny odcień niebieskiego */
-    background-image: linear-gradient(135deg, #0c7bb3 0%, #4a90e2 100%); /* Nowy, niebieski gradient */
-    color: var(--color-light);
+    align-items: center; /* Wyśrodkowanie zawartości w pionie */
+    position: relative;
+    overflow: hidden;
+    background: #5EC2EC; /* Nowy, błękitny kolor tła */
+    color: var(--color-dark); /* Domyślny kolor tekstu na czarny */
     padding: 6rem;
-    border-radius: 18px; /* Zwiększone zaokrąglenie o 50% (z 12px) */
-    min-height: 400px; /* Minimalna wysokość, aby obrazek się zmieścił */
+    border-radius: 18px;
+    min-height: 400px;
 }
 
 .magenta-text-content {
-    flex-basis: 60%; /* Tekst zajmuje 60% szerokości */
+    flex-basis: 60%;
     max-width: 550px;
-    position: relative; /* Upewnia się, że tekst jest nad obrazkiem */
+    position: relative;
     z-index: 2;
 }
 
 .magenta-text-content h2 {
-    font-size: 4rem;
+    font-size: 2.8rem; /* Rozmiar zmniejszony o 30% (z 4rem) */
     font-weight: 700;
 }
 
 .magenta-text-content h3 {
-    font-size: 5rem;
+    font-size: 3.5rem; /* Rozmiar zmniejszony o 30% (z 5rem) */
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-dark); /* Zmiana koloru z magenty na czarny */
     margin-bottom: 2rem;
     line-height: 1.1;
 }
@@ -541,13 +541,27 @@
     max-width: 45ch;
 }
 
+/* Nowe, specyficzne style dla przycisku w tej sekcji */
+.magenta-text-content .btn {
+    background-color: var(--color-dark); /* Czarne tło */
+    border-color: var(--color-dark);
+    color: var(--color-light); /* Biały napis */
+    padding: 0.8rem 2.4rem; /* Mniejszy padding */
+    font-size: 1.6rem; /* Mniejsza czcionka */
+    border-radius: 50px; /* Maksymalne zaokrąglenie */
+}
+.magenta-text-content .btn:hover {
+    background-color: #333; /* Lekko jaśniejszy przy najechaniu */
+    border-color: #333;
+}
+
 .magenta-image-content {
     position: absolute;
-    bottom: -20px; /* Wypycha obrazek lekko w dół */
-    right: -50px; /* Wypycha obrazek lekko w prawo */
+    bottom: -20px;
+    right: -50px;
     width: 45%;
     max-width: 450px;
-    z-index: 1; /* Ustawia obrazek pod tekstem */
+    z-index: 1;
 }
 
 .magenta-image-content img {
@@ -561,19 +575,19 @@
         flex-direction: column;
         padding: 4rem;
         min-height: auto;
+        text-align: center;
     }
 
     .magenta-text-content {
         flex-basis: auto;
         max-width: 100%;
-        text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
 
     .magenta-image-content {
-        position: relative; /* Zmiana z absolute na static */
+        position: relative;
         bottom: auto;
         right: auto;
         width: 80%;
@@ -584,44 +598,9 @@
 
 @media (max-width: 768px) {
     .magenta-text-content h2 {
-        font-size: 3.2rem;
+        font-size: 2.6rem;
     }
     .magenta-text-content h3 {
-        font-size: 4rem;
-    }
-}
-
-/* Responsive adjustments */
-@media (max-width: 992px) {
-    .magenta-moments-section .container {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .magenta-text-content {
-        max-width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .magenta-text-content p {
-        max-width: 60ch;
-    }
-    
-    .magenta-image-content {
-        margin-top: 4rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .magenta-text-content h2 {
-        font-size: 3.2rem;
-    }
-    .magenta-text-content h3 {
-        font-size: 4rem;
-    }
-    .magenta-image-content img {
-        transform: rotate(0deg) scale(1);
+        font-size: 3rem;
     }
 }
