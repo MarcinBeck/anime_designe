@@ -8,8 +8,6 @@ const cameraToggleBtn = document.getElementById('camera-toggle-btn');
 const startGameControls = document.querySelector('.start-game-controls');
 const stopBtn = document.getElementById('stop-btn');
 const symbolSection = document.querySelector('.symbol-section');
-const classButtons = document.querySelectorAll('.classes button');
-const predictBtn = document.getElementById('predictBtn');
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const gallery = document.getElementById('gallery');
@@ -22,6 +20,8 @@ const feedbackContainer = document.getElementById('feedback-container');
 const buttonsControlLine = document.querySelector('.buttons-control-line');
 const facePrompt = document.getElementById('face-prompt');
 
+// UWAGA: Usunęliśmy stąd definicje predictBtn i classButtons
+
 let currentUser = null;
 let currentStream = null;
 let classifier;
@@ -31,6 +31,9 @@ let blazeFaceModel;
 let detectionIntervalId = null;
 let lastDetectedFace = null;
 let isCameraOn = false;
+
+// Zmienne dla przycisków, które zdefiniujemy później
+let classButtons, predictBtn;
 
 const tensorToJSON = (tensor) => Array.from(tensor.dataSync());
 
@@ -84,6 +87,21 @@ async function runDetectionLoop() {
 }
 
 function startCamera() {
+  // === POCZĄTEK KLUCZOWEJ ZMIANY ===
+  // Wyszukujemy elementy dopiero tutaj, gdy mamy pewność, że są częścią DOM i są widoczne
+  classButtons = document.querySelectorAll('.classes button');
+  predictBtn = document.getElementById('predictBtn');
+
+  // Upewniamy się, że event listenery są dodane tylko raz
+  if (!predictBtn.dataset.listenerAttached) {
+    classButtons.forEach(btn => {
+      btn.addEventListener('click', () => takeSnapshot(btn.dataset.class));
+    });
+    predictBtn.addEventListener('click', predict);
+    predictBtn.dataset.listenerAttached = 'true';
+  }
+  // === KONIEC KLUCZOWEJ ZMIANY ===
+
   cameraToggleBtn.disabled = true;
   cameraToggleBtn.textContent = 'Ładowanie...';
   navigator.mediaDevices.getUserMedia({ video: true })
@@ -121,8 +139,10 @@ function stopCamera() {
   startGameControls.classList.remove('hidden');
   stopBtn.classList.add('hidden');
   symbolSection.classList.add('hidden');
-  classButtons.forEach(btn => btn.disabled = true);
-  predictBtn.disabled = true;
+  
+  // Upewniamy się, że przyciski są wyłączone po zatrzymaniu kamery
+  if (classButtons) classButtons.forEach(btn => btn.disabled = true);
+  if (predictBtn) predictBtn.disabled = true;
 }
 
 function clearFeedbackUI() { feedbackContainer.innerHTML = ''; }
@@ -301,8 +321,9 @@ function handleLoggedOutState() {
   currentUser = null;
   if (isCameraOn) stopCamera();
   authContainer.innerHTML = '<button id="login-btn" class="btn-primary">Zaloguj jako Gość</button>';
-  statusEl.textContent = "Zaloguj się, aby rozpocząć.";
-  predictionEl.textContent = ""; gallery.innerHTML = "";
+  if(statusEl) statusEl.textContent = "Zaloguj się, aby rozpocząć.";
+  if(predictionEl) predictionEl.textContent = ""; 
+  if(gallery) gallery.innerHTML = "";
   if(clearBtn) clearBtn.disabled = true;
   if(classifier) classifier.clearAllClasses();
   document.getElementById('login-btn').addEventListener('click', () => { firebase.auth().signInAnonymously(); });
@@ -320,7 +341,7 @@ async function handleLoggedInState(user) {
 async function main() {
   if (await loadModels()) {
     loader.classList.add('fade-out');
-    contentWrapper.classList.remove('hidden'); // <-- POPRAWKA: ZMIANA Z 'content-hidden' na 'hidden'
+    contentWrapper.classList.remove('hidden');
     loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
     statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
     firebase.auth().onAuthStateChanged(user => {
@@ -329,10 +350,9 @@ async function main() {
   }
 }
 
+// Główne event listenery, które są zawsze aktywne
 cameraToggleBtn.addEventListener('click', startCamera);
 stopBtn.addEventListener('click', stopCamera);
 if(clearBtn) clearBtn.addEventListener('click', clearData);
-classButtons.forEach(btn => { btn.addEventListener('click', () => takeSnapshot(btn.dataset.class)); });
-predictBtn.addEventListener('click', predict);
 
 main();
