@@ -87,6 +87,8 @@ window.addEventListener('DOMContentLoaded', () => {
               overlay.height = video.videoHeight;
               runDetectionLoop();
           });
+          video.style.display = 'block';
+          overlay.style.display = 'block';
           isCameraOn = true;
           startGameControls.classList.add('hidden');
           stopBtn.classList.remove('hidden');
@@ -102,6 +104,8 @@ window.addEventListener('DOMContentLoaded', () => {
       if (detectionIntervalId) { clearTimeout(detectionIntervalId); detectionIntervalId = null; }
       if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
       overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+      video.style.display = 'none';
+      overlay.style.display = 'none';
       isCameraOn = false;
       cameraToggleBtn.textContent = 'Start kamera';
       cameraToggleBtn.disabled = false;
