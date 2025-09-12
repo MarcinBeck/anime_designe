@@ -20,6 +20,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('overlay');
     const overlayCtx = overlay.getContext('2d');
     const feedbackContainer = document.getElementById('feedback-container');
+    const buttonsControlLine = document.querySelector('.buttons-control-line');
+    const facePrompt = document.getElementById('face-prompt');
 
     let currentUser = null;
     let currentStream = null;
@@ -61,12 +63,20 @@ window.addEventListener('DOMContentLoaded', () => {
           overlayCtx.strokeStyle = '#c2185b';
           overlayCtx.lineWidth = 4;
           overlayCtx.strokeRect(start[0], start[1], size[0], size[1]);
+          
+          buttonsControlLine.classList.remove('hidden');
+          facePrompt.classList.add('hidden');
+          
           if (feedbackContainer.innerHTML === '') {
             classButtons.forEach(btn => btn.disabled = false);
             predictBtn.disabled = false;
           }
         } else {
           lastDetectedFace = null;
+          
+          buttonsControlLine.classList.add('hidden');
+          facePrompt.classList.remove('hidden');
+
           classButtons.forEach(btn => btn.disabled = true);
           predictBtn.disabled = true;
         }
@@ -188,6 +198,7 @@ window.addEventListener('DOMContentLoaded', () => {
       classifier.addExample(logits, label);
       updateStatus();
       await logTrainingSample(label, 'manual', logits);
+      showToast("Kolejny model został dodany", 'info');
     }
 
     async function predict() {
