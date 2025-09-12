@@ -109,11 +109,6 @@ h1, h2, h3 {
     transition: height 0.3s ease-in-out, background-color 0.3s ease-in-out;
     border-bottom: 1px solid var(--color-gray-dark);
 }
-.main-header .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 .logo-img {
     height: 5rem;
     transition: height 0.3s ease-in-out;
@@ -128,6 +123,43 @@ h1, h2, h3 {
     color: var(--color-magenta);
     transition: font-size 0.3s ease-in-out, color 0.3s ease-in-out;
 }
+
+/* --- POCZĄTEK ZMIAN W WERSJI 1.2.0 --- */
+
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-left-panel {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+}
+
+.header-right-panel {
+    display: flex;
+    align-items: center;
+}
+
+.main-nav a.active {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.main-nav a.active::after {
+    content: '';
+    display: block;
+    width: 80%;
+    margin: 2px auto 0;
+    height: 3px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+}
+
+/* --- KONIEC ZMIAN W WERSJI 1.2.0 --- */
 
 
 /* === HERO SECTION === */
