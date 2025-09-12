@@ -430,11 +430,11 @@
     display: flex;
     position: relative; /* Konieczne do pozycjonowania obrazka */
     overflow: hidden; /* Ukrywa wystające części obrazka */
-    background-color: #1a0f2a;
-    background-image: linear-gradient(135deg, #2c1c46 0%, #1a0f2a 80%);
+    background-color: #0c7bb3; /* Główny odcień niebieskiego */
+    background-image: linear-gradient(135deg, #0c7bb3 0%, #4a90e2 100%); /* Nowy, niebieski gradient */
     color: var(--color-light);
     padding: 6rem;
-    border-radius: 12px;
+    border-radius: 18px; /* Zwiększone zaokrąglenie o 50% (z 12px) */
     min-height: 400px; /* Minimalna wysokość, aby obrazek się zmieścił */
 }
 
