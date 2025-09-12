@@ -320,7 +320,7 @@ async function handleLoggedInState(user) {
 async function main() {
   if (await loadModels()) {
     loader.classList.add('fade-out');
-    contentWrapper.classList.remove('content-hidden');
+    contentWrapper.classList.remove('hidden'); // <-- POPRAWKA: ZMIANA Z 'content-hidden' na 'hidden'
     loader.addEventListener('transitionend', () => { loader.style.display = 'none'; });
     statusEl.textContent = "Modele gotowe. Zaloguj się, aby rozpocząć.";
     firebase.auth().onAuthStateChanged(user => {
