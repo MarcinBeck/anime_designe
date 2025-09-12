@@ -9,7 +9,7 @@
     --color-magenta: #c2185b; 
     --color-dark: #1a1a1a;
     --color-light: #ffffff;
-    --color-gray-light: #f5f5f5;
+    --color-gray-light: #f5f5ff;
     --color-gray-dark: #e0e0e0;
     --color-text: #333;
 }
@@ -162,6 +162,10 @@ button {
     color: var(--color-magenta);
     transition: font-size 0.3s ease-in-out, color 0.3s ease-in-out;
 }
+.main-nav a.active {
+    color: #1a1a1a;
+    font-weight: 700;
+}
 .auth-container { 
     font-size: 1.4rem; 
     display: flex; 
@@ -184,6 +188,12 @@ button {
 .main-header.sticky .main-nav a {
     font-size: 1.8rem;
     color: var(--color-light);
+}
+.main-header.sticky .main-nav a.active {
+    font-weight: 700;
+    /* Możemy dodać podkreślenie dla lepszego kontrastu na lepkim nagłówku */
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 
