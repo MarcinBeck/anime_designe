@@ -41,6 +41,10 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
     justify-content: center;
     align-items: center;
     background-color: #1a1a1a;
+    background-image: url('/anime_designe/img/background-team.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 #loader { text-align: center; color: #fff; font-size: 1.8rem; transition: opacity 0.5s, visibility 0.5s; }
 #loader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -65,6 +69,7 @@ h1 { font-size: 4rem; margin-bottom: 1.5rem; color: #1a1a1a; }
     width: auto;
     height: auto;
     transform: translateX(-50%) translateY(-50%) scaleX(-1);
+    display: none;
 }
 #overlay { z-index: 5; }
 
