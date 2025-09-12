@@ -410,3 +410,12 @@
         right: 1rem;
     }
 }
+
+/* === Definicje Tła Slidera === */
+.slide-bg-1 {
+    background-image: url('../img/hero-bg-1.png');
+}
+
+.slide-bg-2 {
+    background-image: url('../img/hero-bg-2.png');
+}
