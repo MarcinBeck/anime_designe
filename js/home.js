@@ -1,109 +1,78 @@
-// === OBSŁUGA AKORDEONU ===
-const accordionHeaders = document.querySelectorAll('.accordion-header');
-accordionHeaders.forEach(header => {
-    header.addEventListener('click', () => {
-        const accordionContent = header.nextElementSibling;
-        header.classList.toggle('active');
-        accordionContent.classList.toggle('active');
-    });
-});
+'use strict';
 
-// === OBSŁUGA ZAKŁADEK W GALERII ===
-const tabButtons = document.querySelectorAll('.tab-btn');
-const galleryGrid = document.querySelector('.gallery-grid');
-if (tabButtons.length > 0 && galleryGrid) {
-    const originalCards = Array.from(galleryGrid.querySelectorAll('.card'));
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            galleryGrid.innerHTML = '';
-            const tab = button.dataset.tab;
-            if (tab === 'kolorowe') {
-                originalCards.forEach(card => {
-                    galleryGrid.appendChild(card);
-                });
-            } else if (tab === 'bw') {
-                const blackAndWhiteCards = originalCards.slice(3).reverse();
-                blackAndWhiteCards.forEach(card => {
-                    galleryGrid.appendChild(card);
-                });
-            }
-        });
-    });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const heroSlider = document.getElementById('hero-slider');
+    if (!heroSlider) return;
 
-// === OBSŁUGA PRZEWIJANIA STRZAŁKĄ ===
-const scrollDownArrow = document.querySelector('.scroll-down-arrow');
-if (scrollDownArrow) {
-    scrollDownArrow.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetId = scrollDownArrow.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        const header = document.querySelector('.main-header');
+    const slides = heroSlider.querySelectorAll('.hero-slide');
+    const prevButton = heroSlider.querySelector('.slider-nav-arrow.prev');
+    const nextButton = heroSlider.querySelector('.slider-nav-arrow.next');
+    let currentSlide = 0;
+    let slideInterval;
+    const intervalTime = 5000; // 5 sekund
 
-        if (targetElement && header) {
-            const headerHeight = header.offsetHeight;
-            const offsetTop = targetElement.offsetTop - headerHeight;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-    });
-}
-
-// === ANIMACJE PRZY PRZEWIJANIU (Sekcje) ===
-const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
-if (elementsToAnimate.length > 0) {
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.5
-    };
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                entry.target.classList.remove('animate-hidden');
-            } else {
-                entry.target.classList.remove('is-visible');
-                entry.target.classList.add('animate-hidden');
-            }
-        });
-    }, observerOptions);
-    elementsToAnimate.forEach(element => {
-        observer.observe(element);
-    });
-}
-
-// === EFEKT PARALAKSY W HERO ===
-const heroSection = document.querySelector('.hero');
-if (heroSection) {
-    const parallaxTextLeft = document.querySelector('.parallax-text-left');
-    const parallaxTextRight = document.querySelector('.parallax-text-right');
-    const parallaxBtnLeft = document.querySelector('.parallax-btn-left');
-    const parallaxBtnRight = document.querySelector('.parallax-btn-right');
-
-    if (parallaxTextLeft && parallaxTextRight && parallaxBtnLeft && parallaxBtnRight) {
-        window.addEventListener('scroll', () => {
-            const scrollPos = window.scrollY;
-            parallaxTextLeft.style.transform = `translateX(-${scrollPos * 0.5}px)`;
-            parallaxTextRight.style.transform = `translateX(${scrollPos * 0.5}px)`;
-            const btnScrollFactor = scrollPos * 0.7;
-            parallaxBtnLeft.style.transform = `translateX(-${btnScrollFactor}px)`;
-            parallaxBtnRight.style.transform = `translateX(${btnScrollFactor}px)`;
-            const opacity = Math.max(0, 1 - scrollPos / heroSection.offsetHeight * 2);
-            const scale = Math.max(0, 1 - scrollPos / heroSection.offsetHeight * 0.5);
-            parallaxBtnLeft.style.opacity = opacity;
-            parallaxBtnRight.style.opacity = opacity;
-            parallaxBtnLeft.style.transform += ` scale(${scale})`;
-            parallaxBtnRight.style.transform += ` scale(${scale})`;
-            const scrollArrow = document.querySelector('.scroll-down-arrow');
-            if (scrollArrow) {
-                scrollArrow.style.opacity = opacity;
-                scrollArrow.style.transform = `translateX(-50%) translateY(${scrollPos * 0.3}px)`;
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === index) {
+                slide.classList.add('active');
             }
         });
     }
-}
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    function startSlider() {
+        stopSlider(); // Zatrzymuje poprzedni interwał, jeśli istnieje
+        slideInterval = setInterval(nextSlide, intervalTime);
+    }
+
+    function stopSlider() {
+        clearInterval(slideInterval);
+    }
+
+    // Event Listeners dla przycisków nawigacyjnych
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            stopSlider();
+            prevSlide();
+            startSlider(); // Restart po ręcznej nawigacji
+        });
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            stopSlider();
+            nextSlide();
+            startSlider(); // Restart po ręcznej nawigacji
+        });
+    }
+
+    // Inicjalizacja: pokaż pierwszy slajd i uruchom rotator
+    showSlide(currentSlide);
+    startSlider();
+});
+
+// Reszta kodu, który był w tym pliku, powinien zostać usunięty
+// (jeśli był tam jakiś kod związany z przewijaniem parallax)
+// Jeśli chcesz zachować parallax, musimy go dostosować do struktury slidera.
+// Na razie zakładam, że usuwamy stary kod, aby skupić się na sliderze.
+
+// Poniżej jest kod do sticky header, który powinien być w global.js
+// Ale jeśli był w home.js, to należy go przenieść lub usunąć.
+// document.addEventListener('scroll', function() {
+//     const header = document.querySelector('.main-header');
+//     if (window.scrollY > 0) {
+//         header.classList.add('sticky');
+//     } else {
+//         header.classList.remove('sticky');
+//     }
+// });
