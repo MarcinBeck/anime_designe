@@ -3,101 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gra AI - Rozpoznawanie Gestów</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Gra AI | Anime Designe</title>
+
+    <link rel="stylesheet" href="../css/style.css"> <link rel="stylesheet" href="style.css">     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="loader-status">Ładowanie...</p>
+    </div>
+
     <header class="main-header">
-        <div class="container header-container">
-            <div class="header-left">
+        <div class="container">
+            <div class="header-left-panel">
                 <a href="../index.html" class="logo-link">
-                    <img class="logo-img" src="../img/logo.png" alt="Logo" />
+                    <img class="logo-img" src="../img/logo.png" alt="Logo Anime Designe">
                 </a>
                 <nav class="main-nav">
                     <ul>
                         <li><a href="../index.html#gallery">Galeria</a></li>
                         <li><a href="../desktop-3.html">Kontakt</a></li>
-                        <li><a href="index.html">Gra</a></li>
+                        <li><a href="index.html" class="active">Gra</a></li>
                         <li><a href="../statystyki.html">Statystyki</a></li>
                     </ul>
                 </nav>
             </div>
-            <div id="auth-container" class="auth-container"></div>
+            <div class="header-right-panel">
+                <div id="auth-container">
+                    </div>
+            </div>
         </div>
     </header>
 
-    <main class="game-container-main">
-        <div id="loader">
-            <div class="spinner"></div>
-            <p id="loader-status">Inicjalizacja aplikacji...</p>
-        </div>
+    <main class="content-wrapper content-hidden">
+        <div class="container game-container">
+            <h1>Trenuj AI do rozpoznawania symboli!</h1>
+            <p class="status-info">Status próbek: <span id="status">Zaloguj się, aby rozpocząć.</span></p>
 
-        <div class="content-wrapper content-hidden">
-            <div class="video-container">
-                <video id="video" autoplay playsinline muted></video>
-                <canvas id="overlay"></canvas>
-
-                <div id="status" class="status"></div>
-                <button id="stop-btn" class="btn-stop hidden">✕</button>
+            <div class="controls-main">
+                <button id="camera-toggle-btn" class="btn btn-secondary">Start kamera</button>
+                <button id="clearBtn" class="btn" disabled>Wyczyść dane</button>
             </div>
             
-            <div class="start-game-controls">
-                <button id="camera-toggle-btn">Start kamera</button>
+            <div class="video-container">
+                <video id="video" width="640" height="480" autoplay playsinline muted></video>
+                <canvas id="overlay"></canvas>
             </div>
+            
+            <section class="symbol-section hidden">
+                <h2>Krok 1: Dodaj próbki</h2>
+                <p>Pokaż symbol do kamery i kliknij odpowiedni przycisk. Dodaj min. 10 próbek dla każdego.</p>
+                <div class="classes">
+                    <button data-class="KOŁO" disabled>KOŁO</button>
+                    <button data-class="KWADRAT" disabled>KWADRAT</button>
+                    <button data-class="TRÓJKĄT" disabled>TRÓJKĄT</button>
+                </div>
 
-            <div id="symbol-section" class="symbol-section hidden">
-                <div class="prediction-area-top">
-                    <div id="prediction" class="prediction"></div>
-                    <div class="feedback" id="feedback-container"></div>
-                </div>
+                <h2>Krok 2: Sprawdź model</h2>
+                <button id="predictBtn" class="btn btn-primary" disabled>Zgadnij symbol</button>
                 
-                <div class="buttons-control-line">
-                    <button id="predictBtn" class="btn-primary">Zgadnij symbol</button>
-                    <span class="add-label">Dodaj:</span>
-                    <div class="classes">
-                        <button class="btn" data-class="KOŁO">KOŁO</button>
-                        <button class="btn" data-class="KWADRAT">KWADRAT</button>
-                        <button class="btn" data-class="TRÓJKĄT">TRÓJKĄT</button>
-                    </div>
+                <p class="prediction-result">Wynik: <strong id="prediction"></strong></p>
+                <div id="feedback-container"></div>
+            </section>
+            
+            <aside class="gallery-container">
+                <h2>Ostatnia próbka:</h2>
+                <div id="gallery">
+                    <p class="gallery-info">Galeria jest pusta.</p>
                 </div>
-                <div class="gallery-container">
-                    <div class="gallery-header">
-                        <h2>Zebrane próbki:</h2>
-                        <button id="clearBtn" class="clear-button" disabled>Wyczyść dane</button>
-                    </div>
-                    <div class="gallery" id="gallery"></div>
-                </div>
-            </div>
+            </aside>
         </div>
+        <canvas id="canvas" style="display: none;"></canvas>
     </main>
-    
-    <canvas id="canvas" style="display:none;"></canvas>
+
     <div id="toast-container"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    
     <script>
-      var firebaseConfig = { 
+        const firebaseConfig = {
         apiKey: "AIzaSyDgnmnrBiqwFuFcEDpKsG_7hP2c8C4t30E",
         authDomain: "guess-game-35a3b.firebaseapp.com",
         databaseURL: "https://guess-5d206-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "guess-game-35a3b",
         storageBucket: "guess-game-35a3b.appspot.com",
         messagingSenderId: "1083984624029",
-        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"          
-      };
-      firebase.initializeApp(firebaseConfig);
-      const database = firebase.database(); 
+        appId: "1:1083984624029:web:9e5f5f4b5d2e0a2c3d4f5e"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
     </script>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
     <script src="script.js"></script>
 </body>
 </html>
