@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gra AI - Rozpoznawanie Gestów</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/gra.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="game-page">
+
     <header class="main-header">
         <div class="container header-container">
             <div class="header-left">
@@ -35,11 +39,10 @@
             <p id="loader-status">Inicjalizacja aplikacji...</p>
         </div>
 
-        <div class="content-wrapper content-hidden">
+        <div class="content-wrapper hidden">
             <div class="video-container">
                 <video id="video" autoplay playsinline muted></video>
                 <canvas id="overlay"></canvas>
-
                 <div id="status" class="status"></div>
                 <button id="stop-btn" class="btn-stop hidden">✕</button>
             </div>
@@ -75,6 +78,10 @@
         </div>
     </main>
     
+    <footer class="main-footer">
+        <p>Anime Designe &copy; 2025</p>
+    </footer>
+    
     <canvas id="canvas" style="display:none;"></canvas>
     <div id="toast-container"></div>
 
@@ -99,6 +106,7 @@
       const database = firebase.database(); 
     </script>
     
-    <script src="script.js"></script>
+    <script src="../js/global.js" defer></script>
+    <script src="../js/gra.js" defer></script>
 </body>
 </html>
